@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fit20 Recovery Station</title>
+    <style>
+        /* fit20 Stijlelementen */
+        :root {
+            --fit20-blue: #00AEEF;
+            --dark-bg: #121212;
+            --text-gray: #E0E0E0;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .container { width: 90%; }
+
+        h1 { font-size: 3.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 2rem; color: var(--fit20-blue); margin-top: 0; }
+        p { font-size: 1.5rem; color: var(--text-gray); }
+
+        /* De Timer */
+        #timer {
+            font-size: 10rem;
+            font-weight: bold;
+            color: var(--fit20-blue);
+            margin: 40px 0;
+            font-variant-numeric: tabular-nums; /* Voorkomt verspringen van cijfers */
+        }
+
+        /* Schermen wisselen */
+        .hidden { display: none; }
+
+        /* Subtiele animatie voor rust */
+        .pulse {
+            animation: pulse-animation 4s infinite ease-in-out;
+        }
+
+        @keyframes pulse-animation {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="wait-screen">
+        <h1 class="pulse">Welkom bij fit20</h1>
+        <p>Neem plaats in de massagestoel.</p>
+        <p style="font-size: 1rem; color: #555;">Wachten op activatie door trainer...</p>
+    </div>
+
+    <div id="active-screen" class="hidden">
+        <h1 id="user-greeting">Hoi!</h1>
+        <h2 id="program-type">Programma start...</h2>
+        <div id="timer">00:00</div>
+        <p id="instruction">Focus op je ademhaling.</p>
+    </div>
+
+    <script>
+        // Functie om de gegevens uit de URL te lezen
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const user = params.get('user');
+            const program = params.get('program'); // Kan 'prep' of 'cool' zijn
+
+            if (user && program) {
+                runSession(user, program);
+            }
+        }
+
+        function runSession(name, type) {
+            // Wissel schermen
+            document.getElementById('wait-screen').classList.add('hidden');
+            document.getElementById('active-screen').classList.remove('hidden');
+
+            // Vul gegevens in
+            document.getElementById('user-greeting').innerText = "Hoi " + name + "!";
+            
+            let seconds = 0;
+            if (type === 'prep') {
+                document.getElementById('program-type').innerText = "Prep Programma";
+                document.getElementById('instruction').innerText = "Maak je klaar voor een maximale inspanning.";
+                seconds = 300; // 5 minuten
+            } else {
+                document.getElementById('program-type').innerText = "Cool-down Programma";
+                document.getElementById('instruction').innerText = "Ontspan en laat je hartslag zakken.";
+                seconds = 600; // 10 minuten
+            }
+
+            startTimer(seconds);
+        }
+
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            const display = document.getElementById('timer');
+
+            const countdown = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(countdown);
+                    // Na afloop terug naar het wachtscherm (pagina verversen zonder parameters)
+                    window.location.href = window.location.pathname;
+                }
+            }, 1000);
+        }
+
+        // Start de check zodra de pagina laadt
+        window.onload = init;
+    </script>
+</body>
+</html>
