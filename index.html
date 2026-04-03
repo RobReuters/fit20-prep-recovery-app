@@ -3,135 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00AEEF">
     <title>fit20 Recovery Station</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <style>
-        /* fit20 Stijlelementen */
-        :root {
-            --fit20-blue: #00AEEF;
-            --dark-bg: #121212;
-            --text-gray: #E0E0E0;
-        }
-
-        body {
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .container { width: 90%; }
-
-        h1 { font-size: 3.5rem; margin-bottom: 0.5rem; }
-        h2 { font-size: 2rem; color: var(--fit20-blue); margin-top: 0; }
-        p { font-size: 1.5rem; color: var(--text-gray); }
-
-        /* De Timer */
-        #timer {
-            font-size: 10rem;
-            font-weight: bold;
-            color: var(--fit20-blue);
-            margin: 40px 0;
-            font-variant-numeric: tabular-nums; /* Voorkomt verspringen van cijfers */
-        }
-
-        /* Schermen wisselen */
-        .hidden { display: none; }
-
-        /* Subtiele animatie voor rust */
-        .pulse {
-            animation: pulse-animation 4s infinite ease-in-out;
-        }
-
-        @keyframes pulse-animation {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
+        /* Hier staat jouw fit20 styling (zwart, blauw, lettertypes) */
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding-top: 20vh; }
+        #timer { font-size: 5rem; color: #00AEEF; font-weight: bold; }
+        h1 { font-size: 2rem; }
     </style>
 </head>
 <body>
 
-    <div id="wait-screen">
-        <h1 class="pulse">Welkom bij fit20</h1>
-        <p>Neem plaats in de massagestoel.</p>
-        <p style="font-size: 1rem; color: #555;">Wachten op activatie door trainer...</p>
-    </div>
-
-    <div id="active-screen" class="hidden">
-        <h1 id="user-greeting">Hoi!</h1>
-        <h2 id="program-type">Programma start...</h2>
-        <div id="timer">00:00</div>
-        <p id="instruction">Focus op je ademhaling.</p>
+    <div id="content">
+        <h1>Welkom bij fit20 Recovery</h1>
+        <p>Wacht op activatie door je trainer...</p>
     </div>
 
     <script>
-        // Functie om de gegevens uit de URL te lezen
-        function init() {
-            const params = new URLSearchParams(window.location.search);
-            const user = params.get('user');
-            const program = params.get('program'); // Kan 'prep' of 'cool' zijn
+        const BIN_ID = '69d00c00856a682189f8b7f6'; // Vul hier je ID in
+        const API_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym'; // Vul hier je Key in
 
-            if (user && program) {
-                runSession(user, program);
-            }
-        }
+        async function checkInbox() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                const data = await response.json();
+                const record = data.record;
 
-        function runSession(name, type) {
-            // Wissel schermen
-            document.getElementById('wait-screen').classList.add('hidden');
-            document.getElementById('active-screen').classList.remove('hidden');
-
-            // Vul gegevens in
-            document.getElementById('user-greeting').innerText = "Hoi " + name + "!";
-            
-            let seconds = 0;
-            if (type === 'prep') {
-                document.getElementById('program-type').innerText = "Prep Programma";
-                document.getElementById('instruction').innerText = "Maak je klaar voor een maximale inspanning.";
-                seconds = 300; // 5 minuten
-            } else {
-                document.getElementById('program-type').innerText = "Cool-down Programma";
-                document.getElementById('instruction').innerText = "Ontspan en laat je hartslag zakken.";
-                seconds = 600; // 10 minuten
-            }
-
-            startTimer(seconds);
-        }
-
-        function startTimer(duration) {
-            let timer = duration, minutes, seconds;
-            const display = document.getElementById('timer');
-
-            const countdown = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    clearInterval(countdown);
-                    // Na afloop terug naar het wachtscherm (pagina verversen zonder parameters)
-                    window.location.href = window.location.pathname;
+                // Als er een naam staat én het programma is 'recovery'
+                if (record.user && record.program === 'recovery') {
+                    startRecovery(record.user);
+                    resetInbox(); // Belangrijk: zet de brievenbus weer op leeg
                 }
+            } catch (e) { console.error("Check mislukt:", e); }
+        }
+
+        function startRecovery(name) {
+            // Dit vervangt de tekst op het scherm door de persoonlijke begroeting en de timer
+            document.getElementById('content').innerHTML = `
+                <h1>Hoi ${name}!</h1>
+                <p>Geniet van je 10 minuten herstel.</p>
+                <div id="timer">10:00</div>
+            `;
+            
+            // Hier kun je jouw timer-aftel-functie aanroepen
+            runTimer(600); 
+        }
+
+        async function resetInbox() {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                body: JSON.stringify({ "user": "", "program": "idle" })
+            });
+        }
+
+        // Start de check elke 3 seconden
+        setInterval(checkInbox, 3000);
+
+        // Een simpele timer functie (voorbeeld)
+        function runTimer(seconds) {
+            let timeLeft = seconds;
+            const display = document.getElementById('timer');
+            const interval = setInterval(() => {
+                let mins = Math.floor(timeLeft / 60);
+                let secs = timeLeft % 60;
+                display.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if (timeLeft <= 0) clearInterval(interval);
+                timeLeft--;
             }, 1000);
         }
-
-        // Start de check zodra de pagina laadt
-        window.onload = init;
     </script>
 </body>
 </html>
