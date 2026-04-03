@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>fit20 Trainer Remote</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #00AEEF; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .status { font-size: 0.9rem; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>fit20 Trainer Paneel</h2>
+    <p>Stuur een klant naar de Recovery stoel.</p>
+    
+    <input type="text" id="tabletIp" placeholder="IP Adres Tablet (bijv. 192.168.1.15)">
+    <input type="password" id="adminPass" placeholder="Fully Kiosk Remote Password">
+    <hr>
+    <input type="text" id="clientName" placeholder="Naam van de klant">
+    
+    <button onclick="sendToTablet()">Start Recovery (10 min)</button>
+    
+    <p class="status" id="statusText">Nog geen commando verzonden.</p>
+</div>
+
+<script>
+    function sendToTablet() {
+        const ip = document.getElementById('tabletIp').value;
+        const pass = document.getElementById('adminPass').value;
+        const name = document.getElementById('clientName').value;
+        const statusText = document.getElementById('statusText');
+
+        if(!ip || !pass || !name) {
+            alert("Vul a.u.b. alle velden in.");
+            return;
+        }
+
+        // Jouw specifieke GitHub URL
+        const githubUrl = "https://robreuters.github.io/fit20-prep-recovery-app/";
+        const fullTargetUrl = `${githubUrl}?user=${encodeURIComponent(name)}&program=recovery`;
+
+        // Het commando voor Fully Kiosk Remote Admin
+        // We gebruiken 'cmd=loadURL' om de tablet te dwingen de pagina te verversen met de nieuwe naam
+        const remoteCommand = `http://${ip}:8080/?cmd=loadURL&url=${encodeURIComponent(fullTargetUrl)}&password=${pass}`;
+
+        statusText.innerText = "Verzenden naar tablet...";
+
+        // We openen het commando in een onzichtbaar venster/frame om de actie uit te voeren
+        // Let op: Je browser kan een 'mixed content' waarschuwing geven omdat GitHub HTTPS is en je lokale IP HTTP.
+        window.open(remoteCommand, "_blank", "width=100,height=100");
+        
+        statusText.innerText = "Commando verzonden voor " + name;
+    }
+</script>
+
+</body>
+</html>
