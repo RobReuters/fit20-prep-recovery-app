@@ -45,7 +45,7 @@
 
         // Het commando voor Fully Kiosk Remote Admin
         // We gebruiken 'cmd=loadURL' om de tablet te dwingen de pagina te verversen met de nieuwe naam
-        const remoteCommand = `http://${ip}:8080/?cmd=loadURL&url=${encodeURIComponent(fullTargetUrl)}&password=${pass}`;
+        const remoteCommand = `http://${ip}:2323/?cmd=loadURL&url=${encodeURIComponent(fullTargetUrl)}&password=${pass}`;
 
         statusText.innerText = "Verzenden naar tablet...";
 
