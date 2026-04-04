@@ -6,129 +6,100 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>fit20 Recovery</title>
     <style>
-        :root {
-            --fit20-green: #8BC63F;
-            --antraciet: #333333;
-            --light-gray: #eeeeee;
-        }
-
+        :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body { 
-            background: #FFFFFF; 
-            color: var(--antraciet); 
+            background: #FFFFFF; color: var(--antraciet); 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            height: 100vh; width: 100vw; overflow: hidden; 
-            display: flex; justify-content: center; align-items: center;
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Logo ECHT in de hoek, z-index 20 */
+        /* HARD SAFE ZONES: Voorkomt elke vorm van overlap */
+        .top-section { height: 10vh; width: 100%; padding: 20px; }
+        .middle-section { 
+            height: 65vh; width: 100%; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 0 15vw; /* Houdt tekst weg van de zijkanten */
+            text-align: center;
+        }
+        .bottom-section { 
+            height: 25vh; width: 100%; /* Meer ruimte onderin voor logo safe-zone */
+            position: relative; 
+            display: flex; justify-content: center; align-items: flex-end;
+        }
+
         .logo { 
             position: absolute; 
-            bottom: 2vh; 
-            right: 2vw; 
-            width: 30vw; 
-            max-width: 320px; 
-            z-index: 20; 
+            bottom: 30px; 
+            right: 30px; 
+            width: 30vw; max-width: 350px; 
+            z-index: 100; 
         }
 
-        #overallTimer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 3vw;
-            font-weight: 700;
-            color: #ddd;
-            z-index: 20;
-        }
-
-        /* Container smaller gemaakt (80%) voor meer zijruimte */
-        .main-container {
-            width: 80%; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            z-index: 10;
-        }
+        #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
+        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; line-height: 1.2; }
+        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 700px; min-height: 4em; }
 
         #startActionBtn {
-            padding: 8vh 15vw;
-            background: var(--fit20-green);
-            color: white; border: none; border-radius: 20px;
-            font-size: 6vw; font-weight: bold;
+            padding: 6vh 12vw; background: var(--fit20-green); color: white;
+            border: none; border-radius: 20px; font-size: 5vw; font-weight: bold;
             cursor: pointer; box-shadow: 0 15px 30px rgba(139, 198, 63, 0.4);
         }
 
-        /* Cirkel styling */
         .visual-circle {
-            width: 300px; height: 300px;
-            border-radius: 50%;
+            width: 280px; height: 280px; border-radius: 50%;
             background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg);
             display: flex; justify-content: center; align-items: center;
-            margin: 10vh 0; 
-            position: relative;
-            transition: transform 4s linear, background 4s linear;
-            will-change: transform;
+            margin: 3vh 0; position: relative; transition: transform 4s linear, background 4s linear;
         }
-        
-        .visual-circle::after {
-            content: "";
-            width: 280px; height: 280px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-        }
+        .visual-circle::after { content: ""; width: 260px; height: 260px; background: white; border-radius: 50%; position: absolute; }
+        #circleContent { z-index: 5; font-size: 5vw; font-weight: 800; color: var(--fit20-green); }
 
-        #circleContent {
-            z-index: 5;
-            font-size: 4vw;
-            font-weight: 800;
-            color: var(--fit20-green);
-        }
-
-        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; color: var(--antraciet); z-index: 15; }
-        
-        /* BEPERKTE BREEDTE VOOR TEKSTEN OM LOGO TE VERMIJDEN */
-        .sub-text { 
-            font-size: 2.2vw; 
-            color: #666; 
-            width: 100%;
-            max-width: 750px; /* Belangrijke fix: houdt tekst weg bij de hoeken */
-            line-height: 1.5; 
-            min-height: 3.5em; 
-            z-index: 15; 
-        }
-
-        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 15px; background: #eee; z-index: 20; }
+        .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
+    <div class="top-section">
+        <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
+    </div>
 
-    <div class="main-container" id="setupArea">
-        <p style="text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 1vh;">Welcome to the fit20 recovery program</p>
+    <div class="middle-section" id="setupArea">
+        <p style="text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 1vh;">fit20 recovery program</p>
         <h1 id="userName" style="font-size: 7vw; margin-bottom: 2vh;">Systeem Gereed</h1>
         <p class="sub-text" id="personalMsg">Wachten op activatie door je trainer...</p>
-        <button id="startActionBtn" class="hidden" style="margin-top: 4vh;">START</button>
+        <button id="startActionBtn" class="hidden">START</button>
     </div>
 
-    <div class="main-container hidden" id="actionArea">
+    <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">Lichaamsbewustzijn</div>
-        <div class="visual-circle" id="circlePie">
-            <div id="circleContent"></div>
-        </div>
-        <p class="sub-text" id="mainSubText">Maak contact met je lichaam.</p>
+        <div class="visual-circle" id="circlePie"><div id="circleContent"></div></div>
+        <p class="sub-text" id="mainSubText">...</p>
     </div>
 
-    <div class="progress"><div id="bar"></div></div>
-    <img src="fit20-logo.png?v=5" class="logo" alt="fit20">
+    <div class="bottom-section">
+        <img src="fit20-logo.png?v=7" class="logo" alt="fit20">
+        <div class="progress"><div id="bar"></div></div>
+    </div>
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         
+        // --- CONTENT RESERVOIR ---
+        const reservoir = [
+            { cat: "A", gender: "both", profile: "all", title: "Voel je voeten", text: "Breng je aandacht naar je benen. Ze hebben zojuist een topprestatie geleverd. Voel de tinteling van herstel die nu begint." },
+            { cat: "A", gender: "m", profile: "b", title: "Mannelijke Kracht", text: "Je benen zijn de basis van je kracht. Voel de energie die nu zorgt voor de opbouw van nieuwe spiervezels." },
+            { cat: "B", gender: "both", profile: "all", title: "Je stabiele kern", text: "Focus op je rug en buik. Je lichaam pompt nu krachtig voedingsstoffen naar je kern om deze sterker te maken dan voorheen." },
+            { cat: "C", gender: "both", profile: "all", title: "Je motor", text: "Voel hoe je hartslag daalt. Dit is je motor die efficiënter wordt. Je verhoogt op dit moment je algehele conditie." },
+            { cat: "D", gender: "both", profile: "all", title: "Mentale Rust", text: "Ontspan je kaken en je voorhoofd. Je bent nu volledig in de herstelmodus. Je lichaam wordt sterker door de rust." }
+        ];
+
+        let sessionData = { user: "", gender: "both", profile: "all" };
+        let selectedTexts = [];
         let isSessionActive = false;
         let overallSeconds = 600;
 
@@ -138,16 +109,19 @@
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
-                    prepareSession(data.record.user);
-                    await resetBin();
+                    sessionData = data.record;
+                    document.getElementById('userName').innerText = "Hallo " + data.record.user;
+                    document.getElementById('personalMsg').innerText = "Je bent er klaar voor. Neem plaats, ontspan en druk op START.";
+                    document.getElementById('startActionBtn').classList.remove('hidden');
+                    selectedTexts = [pickText("A"), pickText("B"), pickText("C"), pickText("D")].filter(t => t !== undefined);
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
                 }
-            } catch (e) { console.log("Polling..."); }
+            } catch (e) { console.log("Check..."); }
         }
 
-        function prepareSession(name) {
-            document.getElementById('userName').innerText = "Hallo " + name;
-            document.getElementById('personalMsg').innerText = "Je bent er klaar voor. Neem plaats, ontspan en druk op start.";
-            document.getElementById('startActionBtn').classList.remove('hidden');
+        function pickText(category) {
+            const matches = reservoir.filter(t => t.cat === category && (t.gender === "both" || t.gender === sessionData.gender) && (t.profile === "all" || t.profile === sessionData.profile));
+            return matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t.cat === category);
         }
 
         document.getElementById('startActionBtn').addEventListener('click', function() {
@@ -155,114 +129,50 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
-            startOverallTimer();
-            runPositiveFeedback();
-        });
-
-        function startOverallTimer() {
             const display = document.getElementById('timeVal');
             const bar = document.getElementById('bar');
-            const interval = setInterval(() => {
+            setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 bar.style.width = `${((600 - overallSeconds) / 600) * 100}%`;
-                if (overallSeconds-- <= 0) { clearInterval(interval); location.reload(); }
+                if (overallSeconds-- <= 0) location.reload();
             }, 1000);
-        }
+            runFlow();
+        });
 
-        function runPositiveFeedback() {
+        function runFlow() {
             const title = document.getElementById('mainTitle');
             const sub = document.getElementById('mainSubText');
             const pie = document.getElementById('circlePie');
-            
-            let timeLeft = 120; 
+            let timeLeft = 120;
             const feedbackInterval = setInterval(() => {
-                let degrees = (120 - timeLeft) * 3;
-                pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
-
-                if (timeLeft > 100) {
-                    title.innerText = "Voel je voeten en benen";
-                    sub.innerText = "Breng je aandacht naar je benen. Ze hebben zojuist een topprestatie geleverd. Voel de tinteling van herstel die nu begint.";
-                } else if (timeLeft > 80) {
-                    title.innerText = "Kracht in je romp";
-                    sub.innerText = "Focus op je rug en buik. Dit is je stabiele kern. Je lichaam pompt nu voedingsstoffen naar elke vezel die je hebt versterkt.";
-                } else if (timeLeft > 55) {
-                    title.innerText = "Je hart en longen";
-                    sub.innerText = "Voel hoe je hartslag langzaam daalt. Je hart is de motor die je fitter maakt. Wees trots op de prikkel die je hebt gegeven.";
-                } else if (timeLeft > 30) {
-                    title.innerText = "Schouders en armen";
-                    sub.innerText = "Laat je schouders nu zwaar worden in de stoel. Ontspan je armen en je handen. Laat alle resterende spanning los.";
-                } else if (timeLeft > 5) {
-                    title.innerText = "Je gezicht en geest";
-                    sub.innerText = "Ontspan je kaken en je voorhoofd. Je bent nu volledig in de herstelmodus. Je lichaam wordt op dit moment sterker.";
-                }
-
-                if (timeLeft-- <= 0) {
-                    clearInterval(feedbackInterval);
-                    runBoxBreathing();
-                }
+                pie.style.background = `conic-gradient(var(--fit20-green) ${(120-timeLeft)*3}deg, var(--light-gray) ${(120-timeLeft)*3}deg)`;
+                let idx = Math.floor((120 - timeLeft) / 30);
+                if (selectedTexts[idx]) { title.innerText = selectedTexts[idx].title; sub.innerText = selectedTexts[idx].text; }
+                if (timeLeft-- <= 0) { clearInterval(feedbackInterval); runBreathing(); }
             }, 1000);
         }
 
-        function runBoxBreathing() {
+        function runBreathing() {
             const title = document.getElementById('mainTitle');
             const sub = document.getElementById('mainSubText');
             const pie = document.getElementById('circlePie');
             const content = document.getElementById('circleContent');
-            
             pie.style.background = "var(--light-gray)";
-
-            let totalBreathTime = 180; 
-            let cycleStep = 4;
-            let cyclePhase = 0; 
-
-            const breathInterval = setInterval(() => {
-                if (totalBreathTime > 150) {
-                    title.innerText = "Ademhaling";
-                    sub.innerText = "Bereid je voor op de Box-ademhaling. Volg dadelijk het ritme van de cirkel.";
-                    content.innerText = totalBreathTime - 150;
-                } else {
-                    const phases = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                    const msgs = ["Vul je longen met nieuwe energie...", "Laat de rust diep doordringen...", "Laat de laatste restjes spanning gaan...", "Pauzeer even in de stilte..."];
-                    
-                    if (totalBreathTime <= 16) {
-                        title.innerText = "Laatste ronde: " + phases[cyclePhase];
-                    } else {
-                        title.innerText = phases[cyclePhase];
-                    }
-                    
-                    sub.innerText = msgs[cyclePhase];
-                    content.innerText = cycleStep;
-
-                    // Animatie
-                    if (cyclePhase === 0) { pie.style.transform = "scale(1.25)"; pie.style.background = "rgba(139, 198, 63, 0.2)"; }
-                    if (cyclePhase === 2) { pie.style.transform = "scale(1.0)"; pie.style.background = "var(--light-gray)"; }
-
-                    if (cycleStep-- <= 1) {
-                        cycleStep = 4;
-                        cyclePhase = (cyclePhase + 1) % 4;
-                    }
+            let time = 180, step = 4, phase = 0;
+            const bInt = setInterval(() => {
+                if (time > 150) { title.innerText = "Ademhaling"; sub.innerText = "Bereid je voor op de Box-ademhaling..."; content.innerText = time - 150; }
+                else {
+                    const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
+                    title.innerText = (time <= 16 ? "Laatste ronde: " : "") + p[phase];
+                    content.innerText = step;
+                    if (phase === 0) pie.style.transform = "scale(1.2)";
+                    if (phase === 2) pie.style.transform = "scale(1.0)";
+                    if (step-- <= 1) { step = 4; phase = (phase + 1) % 4; }
                 }
-
-                if (totalBreathTime-- <= 0) {
-                    clearInterval(breathInterval);
-                    title.innerText = "Optimaal Hersteld";
-                    sub.innerText = "Je hebt je lichaam het beste cadeau gegeven na je training: echte rust. Geniet van je herstelde kracht!";
-                    content.innerText = "✓";
-                    pie.style.transform = "scale(1.1)";
-                    setTimeout(() => location.reload(), 15000);
-                }
+                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
             }, 1000);
         }
-
-        async function resetBin() {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify({ "user": "", "program": "idle" })
-            });
-        }
-
         setInterval(checkInbox, 3000);
     </script>
 </body>
