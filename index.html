@@ -2,52 +2,145 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>fit20 Recovery</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { background: #FFF; color: #333; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .logo { position: absolute; bottom: 30px; right: 30px; width: 120px; }
-        #content { text-align: center; }
-        h1 { font-weight: 300; text-transform: uppercase; color: #AAA; font-size: 1.2rem; margin: 0; }
-        .name { font-size: 4.5rem; font-weight: 700; margin: 10px 0; }
-        #timer { font-size: 10rem; font-weight: 800; color: #8BC63F; }
-        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 10px; background: #EEE; }
-        #bar { width: 0%; height: 100%; background: #8BC63F; transition: width 1s linear; }
+        :root {
+            --fit20-green: #8BC63F;
+            --antraciet: #333333;
+        }
+
+        body { 
+            background: #FFFFFF; 
+            color: var(--antraciet); 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            width: 100vw;
+            overflow: hidden; 
+            text-align: center;
+        }
+
+        /* Responsive Logo rechtsonder */
+        .logo { 
+            position: absolute; 
+            bottom: 5vh; 
+            right: 5vw; 
+            width: 25vw; /* Flink groter gemaakt */
+            max-width: 300px;
+            min-width: 150px;
+        }
+
+        .welcome-text {
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.3vw;
+            color: #888;
+            font-size: 2.5vw; /* Schalende tekst */
+            margin: 0;
+        }
+
+        .name { 
+            font-size: 8vw; 
+            font-weight: 700; 
+            margin: 2vh 0; 
+            line-height: 1.1;
+        }
+
+        .message {
+            font-size: 3vw;
+            max-width: 80%;
+            margin-bottom: 4vh;
+            line-height: 1.4;
+        }
+
+        #timer { 
+            font-size: 20vw; 
+            font-weight: 800; 
+            color: var(--fit20-green); 
+            margin: 0;
+        }
+
+        /* Grote Startknop voor de klant */
+        #startActionBtn {
+            padding: 3vh 8vw;
+            background: var(--fit20-green);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 4vw;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(139, 198, 63, 0.3);
+        }
+
+        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 1.5vh; background: #EEE; }
+        #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div id="content">
-        <h1>Welcome to fit20</h1>
-        <div class="name" id="userName">Recovery</div>
-        <div id="timer">00:00</div>
+    <div id="setupArea">
+        <p class="welcome-text">Welcome to the fit20 recovery program</p>
+        <div class="name" id="userName">Gereed...</div>
+        <div class="message" id="personalMsg">Wachten op activatie door trainer...</div>
+        <button id="startActionBtn" class="hidden">START</button>
     </div>
+
+    <div id="timerArea" class="hidden">
+        <div id="timer">10:00</div>
+    </div>
+
     <div class="progress"><div id="bar"></div></div>
     <img src="fit20-logo.png" class="logo" alt="fit20">
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+        
+        let isSessionActive = false;
+        let currentClient = "";
 
         async function checkInbox() {
+            if (isSessionActive) return; // Stop met checken als er al iemand zit
+
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
+                    headers: { 'X-Master-Key': MASTER_KEY },
+                    cache: 'no-store'
                 });
                 const data = await res.json();
+                
                 if (data.record.user && data.record.program === 'recovery') {
-                    startSession(data.record.user);
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                        body: JSON.stringify({ "user": "", "program": "idle" })
-                    });
+                    prepareSession(data.record.user);
+                    // Wis de bin direct zodat andere tablets niet ook afgaan
+                    await resetBin();
                 }
-            } catch (e) { console.log("Polling..."); }
+            } catch (e) { console.log("Verbinding check..."); }
         }
 
-        function startSession(name) {
-            document.getElementById('userName').innerText = name;
+        function prepareSession(name) {
+            currentClient = name;
+            document.getElementById('userName').innerText = "Hallo " + name;
+            document.getElementById('personalMsg').innerText = "Je hebt hard getraind vandaag. Goed gedaan! Ga rustig zitten en klik op 'Start'.";
+            document.getElementById('startActionBtn').classList.remove('hidden');
+        }
+
+        document.getElementById('startActionBtn').addEventListener('click', function() {
+            startTimer();
+        });
+
+        function startTimer() {
+            isSessionActive = true;
+            document.getElementById('setupArea').classList.add('hidden');
+            document.getElementById('timerArea').classList.remove('hidden');
+            
             let time = 600;
             const timerEl = document.getElementById('timer');
             const barEl = document.getElementById('bar');
@@ -56,8 +149,21 @@
                 let m = Math.floor(time / 60), s = time % 60;
                 timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 barEl.style.width = `${((600 - time) / 600) * 100}%`;
-                if (time-- <= 0) { clearInterval(interval); timerEl.innerText = "Done"; }
+                
+                if (time-- <= 0) { 
+                    clearInterval(interval); 
+                    timerEl.innerText = "Klaar"; 
+                    setTimeout(() => location.reload(), 5000); // Reset de app na 5 sec
+                }
             }, 1000);
+        }
+
+        async function resetBin() {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                body: JSON.stringify({ "user": "", "program": "idle" })
+            });
         }
 
         setInterval(checkInbox, 3000);
