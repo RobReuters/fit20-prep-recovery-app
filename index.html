@@ -41,7 +41,6 @@
         .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 850px; min-height: 4.5em; }
 
-        /* CIRKEL STYLING - FLEX-SHRINK 0 VOORKOMT OVALE VORM */
         .visual-circle { 
             width: 240px; 
             height: 240px; 
@@ -53,7 +52,8 @@
             align-items: center; 
             margin: 2vh 0; 
             position: relative; 
-            transition: transform 4s linear; 
+            /* Alleen scale transitie voor ademhaling, background doen we via JS voor vloeiendheid */
+            transition: transform 4s ease-in-out; 
         }
 
         .visual-circle::after { 
@@ -120,6 +120,7 @@
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+        // Gebruik de URL met de gid en single=true parameters
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
 
         let reservoir = [], sessionData = {}, selectedTexts = [], isSessionActive = false, overallSeconds = 600;
@@ -127,20 +128,9 @@
         async function loadReservoir() {
             const msg = document.getElementById('personalMsg');
             try {
-                // POGING 1: Direct ophalen
-                let res = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
-                
-                // POGING 2: Fallback via proxy als direct mislukt
-                if (!res.ok) {
-                    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_CSV_URL);
-                    const proxyRes = await fetch(proxy);
-                    const json = await proxyRes.json();
-                    var csvText = json.contents;
-                } else {
-                    var csvText = await res.text();
-                }
-
-                if (!csvText || csvText.includes("<!DOCTYPE html>")) throw new Error("Geen CSV data");
+                let res = await fetch(SHEET_CSV_URL + '&cache=' + Date.now());
+                if (!res.ok) throw new Error("Fetch failed");
+                let csvText = await res.text();
 
                 const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
                 reservoir = lines.slice(1).map(line => {
@@ -158,7 +148,7 @@
                 document.getElementById('userName').innerText = "Systeem Gereed";
                 msg.innerText = "Wachten op activatie door trainer...";
             } catch (e) {
-                msg.innerHTML = "<span style='color:red'><b>Verbindingsfout:</b> Failed to fetch</span><br><small>Herstart de app of check of de sheet op 'Openbaar' staat.</small>";
+                msg.innerHTML = "<span style='color:red'><b>Verbindingsfout:</b> Kan data niet laden.</span>";
             }
         }
         loadReservoir();
@@ -174,13 +164,7 @@
                     document.getElementById('personalMsg').innerText = "Klaar voor herstel? Neem plaats en druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     selectedTexts = ["a","b","c","d","e","f"].map(cat => pickText(cat));
-                    
-                    // Reset de bin
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { 
-                        method: 'PUT', 
-                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, 
-                        body: JSON.stringify({ "user": "", "program": "idle", "genders":[], "profiles":[] }) 
-                    });
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle", "genders":[], "profiles":[] }) });
                 }
             } catch (e) {}
         }
@@ -206,45 +190,55 @@
             runFlow();
         });
 
+        // VLOEIENDE FLOW ANIMATIE (50ms interval voor 20fps)
         function runFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
-            let timeLeft = 180;
-            
+            let start = Date.now();
+            let duration = 180 * 1000;
+
             const flowInt = setInterval(() => {
-                // RESET CIRKEL ELKE 30 SEC
-                let elapsedInSegment = (180 - timeLeft) % 30;
-                let degrees = (elapsedInSegment / 30) * 360;
+                let now = Date.now();
+                let elapsed = now - start;
+                
+                // Vloeiende graden berekening voor de 30-sec segmenten
+                let msInSegment = elapsed % 30000;
+                let degrees = (msInSegment / 30000) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
                 
-                let idx = Math.floor((180 - timeLeft) / 30);
-                if (idx < 6 && selectedTexts[idx]) { 
-                    title.innerText = selectedTexts[idx].title; 
-                    sub.innerText = selectedTexts[idx].text; 
+                // Update tekst per 30 seconden
+                let idx = Math.floor(elapsed / 30000);
+                if (idx < 6 && selectedTexts[idx]) {
+                    if (title.innerText !== selectedTexts[idx].title) {
+                        title.innerText = selectedTexts[idx].title;
+                        sub.innerText = selectedTexts[idx].text;
+                    }
                 }
-                
-                if (timeLeft-- <= 0) { 
-                    clearInterval(flowInt); 
-                    runBreathing(); 
+
+                if (elapsed >= duration) {
+                    clearInterval(flowInt);
+                    runBreathing();
                 }
-            }, 1000);
+            }, 50);
         }
 
         function runBreathing() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
-            pie.style.background = "var(--light-gray)"; 
-            pie.style.transform = "scale(1.0)";
+            pie.style.background = "var(--light-gray)";
             
-            let time = 180, step = 4, phase = 0;
+            let totalTime = 180;
+            let step = 4;
+            let phase = 0;
             
             const bInt = setInterval(() => {
-                if (time > 150) { 
-                    title.innerText = "Focus op ademhaling"; 
-                    sub.innerText = "Volg rustig het ritme van de cirkel."; 
-                    content.innerText = time - 150; 
+                if (totalTime > 150) { 
+                    // VERBETERDE TEKST VOOR VOORBEREIDING
+                    title.innerText = "Breng je adem tot rust"; 
+                    sub.innerText = "Bereid je voor op de Box Breathing oefening. Adem rustig in en uit door je neus."; 
+                    content.innerText = totalTime - 150; 
                 } else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
                     title.innerText = p[phase]; 
-                    sub.innerText = "Focus op je ademhaling..."; 
+                    sub.innerText = "Volg de cijfers in de cirkel..."; 
                     content.innerText = step;
                     
                     if (phase === 0) pie.style.transform = "scale(1.25)";
@@ -256,7 +250,7 @@
                     }
                 }
                 
-                if (time-- <= 0) { 
+                if (totalTime-- <= 0) { 
                     clearInterval(bInt); 
                     title.innerText = "Optimaal Hersteld"; 
                     content.innerText = "✓"; 
@@ -266,10 +260,6 @@
         }
 
         setInterval(checkInbox, 3000);
-        
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker OK"));
-        }
     </script>
 </body>
 </html>
