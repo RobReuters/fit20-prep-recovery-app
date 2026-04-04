@@ -76,7 +76,7 @@
     </div>
 
     <div class="bottom-section">
-        <img src="fit20-logo.png?v=10" class="logo" alt="fit20">
+        <img src="fit20-logo.png?v=11" class="logo" alt="fit20">
         <div class="progress"><div id="bar"></div></div>
     </div>
 
@@ -84,7 +84,7 @@
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         
-        // --- CHECK DIT: Staat hier jouw link tussen de ' ' ? ---
+        // Jouw specifieke Google Sheet CSV link
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQxbcwHzhX38bUqDLIMrWcouCYxiVEP5kj-NwZYeQNbBI1XeaE76DbeYvRDjOOuOHHMD5MtKp9VBcHY/pub?output=csv';
 
         let reservoir = [];
@@ -93,23 +93,20 @@
         let isSessionActive = false;
         let overallSeconds = 600;
 
+        // --- 1. LADEN VAN DE SPREADSHEET ---
         async function loadReservoir() {
             try {
-                console.log("Start laden van:", SHEET_CSV_URL);
-                // We voegen een tijdstempel toe om caching te voorkomen
-                const response = await fetch(SHEET_CSV_URL + '&t=' + new Date().getTime());
-                
-                if (!response.ok) throw new Error('Google geeft geen toegang (Status: ' + response.status + ')');
+                // We voegen een unieke ID toe aan de URL om browser-cache te omzeilen
+                const response = await fetch(SHEET_CSV_URL + '&cachebuster=' + Date.now());
+                if (!response.ok) throw new Error('Netwerk antwoord was niet ok');
                 
                 const csvText = await response.text();
-                const lines = csvText.split('\n');
+                // Splits op regels, filter lege regels eruit
+                const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
                 
-                if (lines.length < 2) throw new Error('De spreadsheet lijkt leeg.');
-
-                reservoir = lines.slice(1).map((line, index) => {
+                reservoir = lines.slice(1).map(line => {
                     const c = line.split(',');
-                    // Als een regel niet genoeg kolommen heeft, slaan we hem over
-                    if (c.length < 4) return null; 
+                    if (c.length < 5) return null;
                     return { 
                         cat: c[0]?.trim().toLowerCase(), 
                         gender: c[1]?.trim().toLowerCase(), 
@@ -119,34 +116,44 @@
                     };
                 }).filter(item => item !== null);
 
-                console.log("Aantal regels geladen:", reservoir.length);
+                if (reservoir.length === 0) throw new Error('Geen bruikbare data in sheet.');
+
                 document.getElementById('userName').innerText = "Systeem Gereed";
                 document.getElementById('personalMsg').innerText = "Wachten op activatie door je trainer...";
             } catch (e) {
-                console.error(e);
-                // HIER laten we de echte fout zien op het scherm:
-                document.getElementById('personalMsg').innerHTML = "<b>Fout bij laden:</b><br>" + e.message;
+                console.error("Fout:", e);
+                document.getElementById('personalMsg').innerHTML = "<b>Fout bij laden cloud-data:</b><br>" + e.message + "<br><small>Check of de sheet nog op 'Openbaar' staat.</small>";
             }
         }
         loadReservoir();
 
-        // De rest van de functies (checkInbox, pickText, runFlow, etc.) blijven hetzelfde
+        // --- 2. CHECKEN OP ACTIVATIE ---
         async function checkInbox() {
             if (isSessionActive || reservoir.length === 0) return;
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, { headers: { 'X-Master-Key': MASTER_KEY } });
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${Date.now()}`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
+                    
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
                     document.getElementById('personalMsg').innerText = "Je bent er klaar voor. Neem plaats, ontspan en druk op de grote START knop.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
+                    
+                    // Selecteer 6 unieke teksten A t/m F op basis van de trainer-labels
                     selectedTexts = ["a","b","c","d","e","f"].map(cat => pickText(cat));
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
+                    
+                    // Wis de bin direct voor de volgende klant
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, 
+                        body: JSON.stringify({ "user": "", "program": "idle", "genders": [], "profiles": [] }) 
+                    });
                 }
-            } catch (e) { console.log("Polling..."); }
+            } catch (e) { console.log("Zoeken naar signaal..."); }
         }
 
+        // --- 3. FILTER LOGICA ---
         function pickText(category) {
             const matches = reservoir.filter(t => {
                 const catMatch = t.cat === category;
@@ -154,51 +161,84 @@
                 const profileMatch = t.profile === "all" || (sessionData.profiles && sessionData.profiles.some(p => t.profile.includes(p.toLowerCase())));
                 return catMatch && genderMatch && profileMatch;
             });
+            // Als er geen specifieke match is, pak de eerste van die categorie als fallback
             return matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t.cat === category);
         }
 
+        // --- 4. START SESSIE ---
         document.getElementById('startActionBtn').addEventListener('click', function() {
             isSessionActive = true;
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
+            
+            // Overall Timer & Voortgangsbalk
             const timerInt = setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((600 - overallSeconds) / 600) * 100}%`;
                 if (overallSeconds-- <= 0) { clearInterval(timerInt); location.reload(); }
             }, 1000);
+
             runPositiveFeedback();
         });
 
+        // --- FASE 1: POSITIVE FEEDBACK (180 SEC / 6 CATEGORIEËN) ---
         function runPositiveFeedback() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
             let timeLeft = 180; 
             const feedbackInterval = setInterval(() => {
                 let degrees = (180 - timeLeft) * 2;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
+
                 let idx = Math.floor((180 - timeLeft) / 30);
-                if (selectedTexts[idx]) { title.innerText = selectedTexts[idx].title; sub.innerText = selectedTexts[idx].text; }
+                if (selectedTexts[idx]) {
+                    title.innerText = selectedTexts[idx].title;
+                    sub.innerText = selectedTexts[idx].text;
+                }
+
                 if (timeLeft-- <= 0) { clearInterval(feedbackInterval); runBreathing(); }
             }, 1000);
         }
 
+        // --- FASE 2: BOX BREATHING (180 SEC) ---
         function runBreathing() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
             pie.style.background = "var(--light-gray)";
+            pie.style.transform = "scale(1.0)";
+            
             let time = 180, step = 4, phase = 0;
             const bInt = setInterval(() => {
-                if (time > 150) { title.innerText = "Ademhaling"; sub.innerText = "Bereid je voor op de Box-ademhaling..."; content.innerText = time - 150; }
+                if (time > 150) { 
+                    title.innerText = "Focus op ademhaling"; 
+                    sub.innerText = "Bereid je voor op de Box-ademhaling. Volg rustig het ritme van de cirkel."; 
+                    content.innerText = time - 150; 
+                }
                 else {
-                    const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"], msgs = ["Vul je longen...", "Ontspan...", "Laat alles los...", "Rust..."];
-                    title.innerText = (time <= 16 ? "Laatste ronde: " : "") + p[phase]; sub.innerText = msgs[phase]; content.innerText = step;
+                    const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
+                    const msgs = ["Vul je longen met nieuwe energie...", "Houd deze rust even vast...", "Laat alle resterende spanning los...", "Ontspan in de stilte..."];
+                    
+                    title.innerText = (time <= 16 ? "Laatste ronde: " : "") + p[phase];
+                    sub.innerText = msgs[phase]; // Tekst verandert nu correct mee!
+                    content.innerText = step;
+
                     if (phase === 0) pie.style.transform = "scale(1.25)";
                     if (phase === 2) pie.style.transform = "scale(1.0)";
+
                     if (step-- <= 1) { step = 4; phase = (phase + 1) % 4; }
                 }
-                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
+
+                if (time-- <= 0) { 
+                    clearInterval(bInt); 
+                    title.innerText = "Optimaal Hersteld"; 
+                    sub.innerText = "Je herstel is nu optimaal gestart. Geniet van je herwonnen kracht en focus!"; 
+                    content.innerText = "✓"; 
+                    setTimeout(() => location.reload(), 15000); 
+                }
             }, 1000);
         }
+
+        // Elke 3 seconden checken op signaal van trainer
         setInterval(checkInbox, 3000);
     </script>
 </body>
