@@ -3,142 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Recovery Station</title>
+    <title>fit20 Recovery</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        :root {
-            --fit20-green: #8BC63F;
-            --fit20-blue: #00AEEF;
-            --fit20-magenta: #E6007E;
-            --antraciet: #333333;
-            --bg-white: #FFFFFF;
-        }
-
-        body {
-            background-color: var(--bg-white);
-            color: var(--antraciet);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .logo-bottom-right {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            width: 120px;
-            opacity: 0.8;
-        }
-
+        body { background: #FFF; color: #333; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .logo { position: absolute; bottom: 30px; right: 30px; width: 120px; }
         #content { text-align: center; }
-
-        h1 {
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #888;
-            font-size: 1.2rem;
-            margin: 0;
-        }
-
-        .client-name {
-            font-size: 4rem;
-            font-weight: 700;
-            margin: 10px 0 30px 0;
-        }
-
-        #timer {
-            font-size: 10rem;
-            font-weight: 800;
-            color: var(--fit20-green);
-            animation: pulse 4s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-
-        .progress-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: #eee;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: var(--fit20-green);
-            transition: width 1s linear;
-        }
+        h1 { font-weight: 300; text-transform: uppercase; color: #AAA; font-size: 1.2rem; margin: 0; }
+        .name { font-size: 4.5rem; font-weight: 700; margin: 10px 0; }
+        #timer { font-size: 10rem; font-weight: 800; color: #8BC63F; }
+        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 10px; background: #EEE; }
+        #bar { width: 0%; height: 100%; background: #8BC63F; transition: width 1s linear; }
     </style>
 </head>
 <body>
-    <img src="fit20-logo.png" class="logo-bottom-right" alt="fit20 Logo">
-
     <div id="content">
-        <h1>Welkom bij fit20</h1>
-        <div class="client-name" id="display-name">Recovery</div>
+        <h1>Welcome to fit20</h1>
+        <div class="name" id="userName">Recovery</div>
         <div id="timer">00:00</div>
     </div>
-
-    <div class="progress-container">
-        <div id="progress-bar"></div>
-    </div>
+    <div class="progress"><div id="bar"></div></div>
+    <img src="fit20-logo.png" class="logo" alt="fit20">
 
     <script>
-        const BIN_ID = 'JOUW_BIN_ID'; 
-        const API_KEY = 'JOUW_API_KEY';
+        const BIN_ID = '69d00c00856a682189f8b7f6';
+        const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
 
         async function checkInbox() {
             try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
                 });
-                const data = await response.json();
-                const record = data.record;
-
-                if (record.user && record.program === 'recovery') {
-                    startRecovery(record.user);
-                    resetInbox();
+                const data = await res.json();
+                if (data.record.user && data.record.program === 'recovery') {
+                    startSession(data.record.user);
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                        body: JSON.stringify({ "user": "", "program": "idle" })
+                    });
                 }
-            } catch (e) { console.error("Fout bij ophalen:", e); }
+            } catch (e) { console.log("Polling..."); }
         }
 
-        function startRecovery(name) {
-            document.getElementById('display-name').innerText = name;
-            let timeLeft = 600; // 10 minuten
-            const timerDisplay = document.getElementById('timer');
-            const progressBar = document.getElementById('progress-bar');
-
-            const countdown = setInterval(() => {
-                let mins = Math.floor(timeLeft / 60);
-                let secs = timeLeft % 60;
-                timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                
-                progressBar.style.width = ((600 - timeLeft) / 600 * 100) + '%';
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    timerDisplay.innerText = "Klaar!";
-                }
-                timeLeft--;
+        function startSession(name) {
+            document.getElementById('userName').innerText = name;
+            let time = 600;
+            const timerEl = document.getElementById('timer');
+            const barEl = document.getElementById('bar');
+            
+            const interval = setInterval(() => {
+                let m = Math.floor(time / 60), s = time % 60;
+                timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                barEl.style.width = `${((600 - time) / 600) * 100}%`;
+                if (time-- <= 0) { clearInterval(interval); timerEl.innerText = "Done"; }
             }, 1000);
-        }
-
-        async function resetInbox() {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-                body: JSON.stringify({ "user": "", "program": "idle" })
-            });
         }
 
         setInterval(checkInbox, 3000);
