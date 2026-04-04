@@ -4,13 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-touch-fullscreen" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="fit20-icon.png">
-    <meta name="theme-color" content="#8BC63F">
     <title>fit20 Recovery</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
@@ -23,30 +18,10 @@
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 800px; min-height: 4.5em; }
-        
-        /* CIRKEL DEFINITIE - FLEX-SHRINK VOORKOMT PLAT SLAAN */
-        .visual-circle { 
-            width: 240px; height: 240px; 
-            flex-shrink: 0; 
-            border-radius: 50%; 
-            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
-            display: flex; justify-content: center; align-items: center; 
-            margin: 2vh 0; position: relative; 
-            transition: transform 4s linear; 
-        }
-        .visual-circle::after { 
-            content: ""; width: 220px; height: 220px; 
-            background: white; border-radius: 50%; 
-            position: absolute; z-index: 1;
-        }
-        #circleContent { 
-            z-index: 10; 
-            font-size: 6vw; font-weight: 800; 
-            color: var(--fit20-green); 
-            position: relative; 
-        }
-
-        #startActionBtn { padding: 6vh 12vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5.5vw; font-weight: bold; cursor: pointer; box-shadow: 0 15px 30px rgba(139,198,63,0.4); }
+        .visual-circle { width: 240px; height: 240px; flex-shrink: 0; border-radius: 50%; background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); display: flex; justify-content: center; align-items: center; margin: 2vh 0; position: relative; transition: transform 4s linear; }
+        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
+        #circleContent { z-index: 10; font-size: 6vw; font-weight: 800; color: var(--fit20-green); position: relative; }
+        #startActionBtn { padding: 6vh 12vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5.5vw; font-weight: bold; cursor: pointer; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
         .hidden { display: none !important; }
@@ -58,7 +33,7 @@
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 7vw; margin-bottom: 2vh;">Laden...</h1>
-        <p class="sub-text" id="personalMsg">Bezig met ophalen van cloud-data.</p>
+        <p class="sub-text" id="personalMsg">Cloud-data ophalen...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
@@ -76,27 +51,36 @@
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
-        
-        // DE NIEUWE URL IS HIER GEPLAATST:
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?output=csv';
 
         let reservoir = [], sessionData = {}, selectedTexts = [], isSessionActive = false, overallSeconds = 600;
 
         async function loadReservoir() {
+            const msg = document.getElementById('personalMsg');
             try {
-                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_CSV_URL);
+                // Gebruik een tijdstempel om caching te voorkomen
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(SHEET_CSV_URL)}&t=${Date.now()}`;
                 const res = await fetch(proxyUrl);
+                
+                if (!res.ok) throw new Error("Netwerkverbinding mislukt");
+                
                 const json = await res.json();
+                if (!json.contents) throw new Error("Geen data ontvangen van Sheet");
+
                 const lines = json.contents.split(/\r?\n/).filter(l => l.trim() !== "");
                 reservoir = lines.slice(1).map(line => {
                     const c = line.includes(';') ? line.split(';') : line.split(',');
                     if (c.length < 4) return null;
                     return { cat: c[0]?.trim().toLowerCase(), gender: c[1]?.trim().toLowerCase(), profile: c[2]?.trim().toLowerCase(), title: c[3]?.trim(), text: c[4]?.trim() };
                 }).filter(i => i !== null);
+
+                if (reservoir.length === 0) throw new Error("De spreadsheet lijkt leeg");
+
                 document.getElementById('userName').innerText = "Systeem Gereed";
-                document.getElementById('personalMsg').innerText = "Wachten op activatie door trainer...";
+                msg.innerText = "Wachten op activatie door trainer...";
             } catch (e) {
-                document.getElementById('personalMsg').innerHTML = "<b>Fout bij laden:</b> Ververs de pagina.";
+                msg.innerHTML = `<span style="color:red"><b>Fout:</b> ${e.message}</span><br><small>Check of de sheet op 'Openbaar / CSV' staat.</small>`;
+                console.error(e);
             }
         }
         loadReservoir();
@@ -140,11 +124,9 @@
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
             let timeLeft = 180;
             const flowInt = setInterval(() => {
-                // RESET CIRKEL ELKE 30 SECONDEN
                 let elapsedInSegment = (180 - timeLeft) % 30;
                 let degrees = (elapsedInSegment / 30) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
-                
                 let idx = Math.floor((180 - timeLeft) / 30);
                 if (idx < 6 && selectedTexts[idx]) { 
                     title.innerText = selectedTexts[idx].title; 
@@ -159,11 +141,7 @@
             pie.style.background = "var(--light-gray)"; pie.style.transform = "scale(1.0)";
             let time = 180, step = 4, phase = 0;
             const bInt = setInterval(() => {
-                if (time > 150) { 
-                    title.innerText = "Focus op ademhaling"; 
-                    sub.innerText = "Volg rustig het ritme van de cirkel."; 
-                    content.innerText = time - 150; 
-                }
+                if (time > 150) { title.innerText = "Focus op ademhaling"; sub.innerText = "Volg het ritme."; content.innerText = time - 150; }
                 else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
                     title.innerText = p[phase]; sub.innerText = "Volg de cijfers..."; content.innerText = step;
@@ -171,14 +149,10 @@
                     if (phase === 2) pie.style.transform = "scale(1.0)";
                     if (step-- <= 1) { step = 4; phase = (phase + 1) % 4; }
                 }
-                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
+                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 10000); }
             }, 1000);
         }
         setInterval(checkInbox, 3000);
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => console.log("SW OK"));
-        }
     </script>
 </body>
 </html>
