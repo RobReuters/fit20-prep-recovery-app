@@ -5,117 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fit20 Trainer Remote</title>
     <style>
+        :root {
+            --fit20-green: #8BC63F;
+            --fit20-dark-bg: #1A1A1B;
+            --fit20-card-bg: #252526;
+            --text-main: #FFFFFF;
+        }
+
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #121212; 
-            color: white; 
+            background-color: var(--fit20-dark-bg); 
+            color: var(--text-main); 
             display: flex; 
+            flex-direction: column;
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
             margin: 0; 
         }
+
+        .logo-container {
+            margin-bottom: 30px;
+        }
+        .logo-container img {
+            max-width: 120px;
+            height: auto;
+        }
+
         .container { 
-            background-color: #1e1e1e; 
-            padding: 30px; 
-            border-radius: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-            width: 90%; 
-            max-width: 400px; 
+            background-color: var(--fit20-card-bg); 
+            padding: 35px; 
+            border-radius: 25px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4); 
+            width: 85%; 
+            max-width: 380px; 
             text-align: center;
             border: 1px solid #333;
         }
-        h2 { color: #00AEEF; margin-bottom: 20px; }
+
+        h2 { 
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-main); 
+            margin-bottom: 25px; 
+            font-size: 1.3rem;
+        }
+
         input { 
             width: 100%; 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border-radius: 10px; 
+            padding: 18px; 
+            margin-bottom: 25px; 
+            border-radius: 12px; 
             border: 1px solid #444; 
             background: #2a2a2a; 
             color: white; 
             font-size: 1.1rem;
             box-sizing: border-box;
+            transition: border-color 0.3s;
         }
+        input:focus {
+            border-color: var(--fit20-green);
+            outline: none;
+        }
+
         button { 
             width: 100%; 
-            padding: 15px; 
-            background-color: #00AEEF; 
-            color: white; 
+            padding: 18px; 
+            background-color: var(--fit20-green); 
+            color: #1a1a1b; /* Donkere tekst op groene knop */
             border: none; 
-            border-radius: 10px; 
-            font-size: 1.2rem; 
+            border-radius: 12px; 
+            font-size: 1.25rem; 
             font-weight: bold; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.1s;
         }
-        button:active { background-color: #0082b3; }
+        button:active { 
+            background-color: #79ac36; 
+            transform: scale(0.98);
+        }
+
         #status { 
-            margin-top: 20px; 
-            font-size: 0.9rem; 
+            margin-top: 25px; 
+            font-size: 0.95rem; 
             color: #888; 
+            font-style: italic;
         }
-        .logo { font-weight: bold; font-style: italic; color: #00AEEF; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <span class="logo">fit20 recovery</span>
-    <h2>Trainer Paneel</h2>
-    
-    <input type="text" id="klantNaam" placeholder="Naam van het lid..." autofocus>
-    
-    <button onclick="stuurNaarStoel()">Start Recovery (10 min)</button>
-    
-    <div id="status">Gereed voor invoer</div>
-</div>
+    <div class="logo-container">
+        <img src="fit20-logo.png" alt="fit20 Logo">
+    </div>
 
-<script>
-    // VUL HIER JOUW GEGEVENS IN
-    const BIN_ID = '69d00c00856a682189f8b7f6'; 
-    const API_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+    <div class="container">
+        <h2>Recovery Session</h2>
+        
+        <input type="text" id="klantNaam" placeholder="Naam van het lid..." autofocus>
+        
+        <button onclick="stuurNaarStoel()">Start 10 Min Recovery</button>
+        
+        <div id="status">Gereed voor activatie</div>
+    </div>
 
-    async function stuurNaarStoel() {
-        const naam = document.getElementById('klantNaam').value;
-        const statusDiv = document.getElementById('status');
-
-        if (!naam) {
-            alert("Vul eerst een naam in!");
-            return;
-        }
-
-        statusDiv.innerText = "Verbinding maken met stoel...";
-        statusDiv.style.color = "#00AEEF";
-
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': API_KEY
-                },
-                body: JSON.stringify({ 
-                    "user": naam, 
-                    "program": "recovery" 
-                })
-            });
-
-            if (response.ok) {
-                statusDiv.innerText = "Succes! " + naam + " kan plaatsnemen.";
-                statusDiv.style.color = "#4CAF50";
-                document.getElementById('klantNaam').value = ""; // Veld leegmaken
-            } else {
-                throw new Error("Verzendfout");
-            }
-
-        } catch (error) {
-            console.error(error);
-            statusDiv.innerText = "Fout: Controleer internetverbinding.";
-            statusDiv.style.color = "#f44336";
-        }
-    }
-</script>
-
-</body>
+    </body>
 </html>
