@@ -52,7 +52,6 @@
             align-items: center; 
             margin: 2vh 0; 
             position: relative; 
-            /* Alleen scale transitie voor ademhaling, background doen we via JS voor vloeiendheid */
             transition: transform 4s ease-in-out; 
         }
 
@@ -120,7 +119,6 @@
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
-        // Gebruik de URL met de gid en single=true parameters
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
 
         let reservoir = [], sessionData = {}, selectedTexts = [], isSessionActive = false, overallSeconds = 600;
@@ -190,7 +188,6 @@
             runFlow();
         });
 
-        // VLOEIENDE FLOW ANIMATIE (50ms interval voor 20fps)
         function runFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
             let start = Date.now();
@@ -200,12 +197,10 @@
                 let now = Date.now();
                 let elapsed = now - start;
                 
-                // Vloeiende graden berekening voor de 30-sec segmenten
                 let msInSegment = elapsed % 30000;
                 let degrees = (msInSegment / 30000) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
                 
-                // Update tekst per 30 seconden
                 let idx = Math.floor(elapsed / 30000);
                 if (idx < 6 && selectedTexts[idx]) {
                     if (title.innerText !== selectedTexts[idx].title) {
@@ -216,6 +211,8 @@
 
                 if (elapsed >= duration) {
                     clearInterval(flowInt);
+                    // FORCEER LEEGMAKEN SUBTITLE VOOR TRANSITIE
+                    sub.innerText = "";
                     runBreathing();
                 }
             }, 50);
@@ -226,26 +223,26 @@
             pie.style.background = "var(--light-gray)";
             
             let totalTime = 180;
-            let step = 4;
+            let step = 1; // START BIJ 1
             let phase = 0;
             
             const bInt = setInterval(() => {
                 if (totalTime > 150) { 
-                    // VERBETERDE TEKST VOOR VOORBEREIDING
                     title.innerText = "Breng je adem tot rust"; 
                     sub.innerText = "Bereid je voor op de Box Breathing oefening. Adem rustig in en uit door je neus."; 
                     content.innerText = totalTime - 150; 
                 } else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
                     title.innerText = p[phase]; 
-                    sub.innerText = "Volg de cijfers in de cirkel..."; 
+                    sub.innerText = "Focus op je ademhaling..."; 
                     content.innerText = step;
                     
                     if (phase === 0) pie.style.transform = "scale(1.25)";
                     if (phase === 2) pie.style.transform = "scale(1.0)";
                     
-                    if (step-- <= 1) { 
-                        step = 4; 
+                    // TELLER LOOPT OP: 1, 2, 3, 4
+                    if (step++ >= 4) { 
+                        step = 1; 
                         phase = (phase + 1) % 4; 
                     }
                 }
@@ -253,6 +250,7 @@
                 if (totalTime-- <= 0) { 
                     clearInterval(bInt); 
                     title.innerText = "Optimaal Hersteld"; 
+                    sub.innerText = ""; // VERWIJDER ONDERTITELING BIJ EIND
                     content.innerText = "✓"; 
                     setTimeout(() => location.reload(), 15000); 
                 }
