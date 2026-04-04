@@ -4,73 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="fit20-icon.png">
+    <meta name="theme-color" content="#8BC63F">
     <title>fit20 Recovery</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-touch-fullscreen" content="yes">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="fit20-icon.png">
-<meta name="theme-color" content="#8BC63F">
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body { 
-            background: #FFFFFF; color: var(--antraciet); 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            height: 100vh; width: 100vw; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        /* VASTE LAYOUT SECTIES (VOORKOMT OVERLAP) */
+        body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         .top-section { height: 10vh; width: 100%; padding: 20px; }
-        .middle-section { 
-            height: 65vh; width: 100%; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 0 15vw; text-align: center;
-            z-index: 10;
-        }
-        .bottom-section { 
-            height: 25vh; width: 100%; position: relative; 
-            display: flex; justify-content: center; align-items: flex-end; 
-        }
-
-        .logo { position: absolute; bottom: 30px; right: 30px; width: 30vw; max-width: 320px; z-index: 100; }
+        .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 15vw; text-align: center; }
+        .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+        .logo { position: absolute; bottom: 30px; right: 30px; width: 30vw; max-width: 300px; z-index: 100; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
-
-        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; line-height: 1.2; }
-        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 750px; min-height: 4.5em; }
-
-        /* VISUELE CIRKEL & TAARTPUNT */
+        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
+        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 800px; min-height: 4.5em; }
+        
+        /* CIRKEL DEFINITIE - FLEX-SHRINK VOORKOMT PLAT SLAAN */
         .visual-circle { 
-            width: 240px; 
-            height: 240px; 
-            flex-shrink: 0; /* DIT VOORKOMT HET PLAT SLAAN */
+            width: 240px; height: 240px; 
+            flex-shrink: 0; 
             border-radius: 50%; 
             background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            margin: 2vh 0; 
-            position: relative; 
+            display: flex; justify-content: center; align-items: center; 
+            margin: 2vh 0; position: relative; 
             transition: transform 4s linear; 
         }
         .visual-circle::after { 
-            content: ""; 
-            width: 220px; 
-            height: 220px; 
-            background: white; 
-            border-radius: 50%; 
-            position: absolute; 
+            content: ""; width: 220px; height: 220px; 
+            background: white; border-radius: 50%; 
+            position: absolute; z-index: 1;
+        }
+        #circleContent { 
+            z-index: 10; 
+            font-size: 6vw; font-weight: 800; 
+            color: var(--fit20-green); 
+            position: relative; 
         }
 
-        #startActionBtn {
-            padding: 6vh 12vw; background: var(--fit20-green); color: white;
-            border: none; border-radius: 20px; font-size: 5.5vw; font-weight: bold;
-            cursor: pointer; box-shadow: 0 15px 30px rgba(139, 198, 63, 0.4);
-        }
-
+        #startActionBtn { padding: 6vh 12vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5.5vw; font-weight: bold; cursor: pointer; box-shadow: 0 15px 30px rgba(139,198,63,0.4); }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
         .hidden { display: none !important; }
@@ -78,25 +54,22 @@
 </head>
 <body>
 
-    <div class="top-section">
-        <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
-    </div>
+    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div></div>
 
     <div class="middle-section" id="setupArea">
-        <p style="text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 1vh;">fit20 recovery program</p>
         <h1 id="userName" style="font-size: 7vw; margin-bottom: 2vh;">Laden...</h1>
-        <p class="sub-text" id="personalMsg">Bezig met ophalen van de sessie-data uit de cloud.</p>
+        <p class="sub-text" id="personalMsg">Bezig met ophalen van cloud-data.</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
     <div class="middle-section hidden" id="actionArea">
-        <div class="instruction-title" id="mainTitle">Lichaamsbewustzijn</div>
+        <div class="instruction-title" id="mainTitle">...</div>
         <div class="visual-circle" id="circlePie"><div id="circleContent"></div></div>
         <p class="sub-text" id="mainSubText">...</p>
     </div>
 
     <div class="bottom-section">
-        <img src="fit20-logo.png?v=11" class="logo" alt="fit20">
+        <img src="fit20-logo.png" class="logo">
         <div class="progress"><div id="bar"></div></div>
     </div>
 
@@ -104,50 +77,30 @@
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         
-        // Jouw specifieke Google Sheet CSV link
+        // DE NIEUWE URL IS HIER GEPLAATST:
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?output=csv';
 
-        let reservoir = [];
-        let sessionData = { user: "", genders: [], profiles: [] };
-        let selectedTexts = [];
-        let isSessionActive = false;
-        let overallSeconds = 600;
+        let reservoir = [], sessionData = {}, selectedTexts = [], isSessionActive = false, overallSeconds = 600;
 
-        // --- 1. LADEN VAN DE SPREADSHEET ---
         async function loadReservoir() {
             try {
-                // We voegen een unieke ID toe aan de URL om browser-cache te omzeilen
-                const response = await fetch(SHEET_CSV_URL + '&cachebuster=' + Date.now());
-                if (!response.ok) throw new Error('Netwerk antwoord was niet ok');
-                
-                const csvText = await response.text();
-                // Splits op regels, filter lege regels eruit
-                const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
-                
+                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_CSV_URL);
+                const res = await fetch(proxyUrl);
+                const json = await res.json();
+                const lines = json.contents.split(/\r?\n/).filter(l => l.trim() !== "");
                 reservoir = lines.slice(1).map(line => {
-                    const c = line.split(',');
-                    if (c.length < 5) return null;
-                    return { 
-                        cat: c[0]?.trim().toLowerCase(), 
-                        gender: c[1]?.trim().toLowerCase(), 
-                        profile: c[2]?.trim().toLowerCase(), 
-                        title: c[3]?.trim(), 
-                        text: c[4]?.trim() 
-                    };
-                }).filter(item => item !== null);
-
-                if (reservoir.length === 0) throw new Error('Geen bruikbare data in sheet.');
-
+                    const c = line.includes(';') ? line.split(';') : line.split(',');
+                    if (c.length < 4) return null;
+                    return { cat: c[0]?.trim().toLowerCase(), gender: c[1]?.trim().toLowerCase(), profile: c[2]?.trim().toLowerCase(), title: c[3]?.trim(), text: c[4]?.trim() };
+                }).filter(i => i !== null);
                 document.getElementById('userName').innerText = "Systeem Gereed";
-                document.getElementById('personalMsg').innerText = "Wachten op activatie door je trainer...";
+                document.getElementById('personalMsg').innerText = "Wachten op activatie door trainer...";
             } catch (e) {
-                console.error("Fout:", e);
-                document.getElementById('personalMsg').innerHTML = "<b>Fout bij laden cloud-data:</b><br>" + e.message + "<br><small>Check of de sheet nog op 'Openbaar' staat.</small>";
+                document.getElementById('personalMsg').innerHTML = "<b>Fout bij laden:</b> Ververs de pagina.";
             }
         }
         loadReservoir();
 
-        // --- 2. CHECKEN OP ACTIVATIE ---
         async function checkInbox() {
             if (isSessionActive || reservoir.length === 0) return;
             try {
@@ -155,117 +108,77 @@
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
-                    
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
-                    document.getElementById('personalMsg').innerText = "Je bent er klaar voor. Neem plaats, ontspan en druk op de grote START knop.";
+                    document.getElementById('personalMsg').innerText = "Klaar voor herstel? Neem plaats en druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
-                    
-                    // Selecteer 6 unieke teksten A t/m F op basis van de trainer-labels
                     selectedTexts = ["a","b","c","d","e","f"].map(cat => pickText(cat));
-                    
-                    // Wis de bin direct voor de volgende klant
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { 
-                        method: 'PUT', 
-                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, 
-                        body: JSON.stringify({ "user": "", "program": "idle", "genders": [], "profiles": [] }) 
-                    });
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle", "genders":[], "profiles":[] }) });
                 }
-            } catch (e) { console.log("Zoeken naar signaal..."); }
+            } catch (e) {}
         }
 
-        // --- 3. FILTER LOGICA ---
         function pickText(category) {
-            const matches = reservoir.filter(t => {
-                const catMatch = t.cat === category;
-                const genderMatch = t.gender === "both" || (sessionData.genders && sessionData.genders.some(g => t.gender.includes(g.toLowerCase())));
-                const profileMatch = t.profile === "all" || (sessionData.profiles && sessionData.profiles.some(p => t.profile.includes(p.toLowerCase())));
-                return catMatch && genderMatch && profileMatch;
-            });
-            // Als er geen specifieke match is, pak de eerste van die categorie als fallback
+            const matches = reservoir.filter(t => t.cat === category && (t.gender === "both" || sessionData.genders.some(g => t.gender.includes(g.toLowerCase()))) && (t.profile === "all" || sessionData.profiles.some(p => t.profile.includes(p.toLowerCase()))));
             return matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t.cat === category);
         }
 
-        // --- 4. START SESSIE ---
         document.getElementById('startActionBtn').addEventListener('click', function() {
             isSessionActive = true;
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
-            
-            // Overall Timer & Voortgangsbalk
-            const timerInt = setInterval(() => {
+            const masterTimer = setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((600 - overallSeconds) / 600) * 100}%`;
-                if (overallSeconds-- <= 0) { clearInterval(timerInt); location.reload(); }
+                if (overallSeconds-- <= 0) { clearInterval(masterTimer); location.reload(); }
             }, 1000);
-
-            runPositiveFeedback();
+            runFlow();
         });
 
-        // --- FASE 1: POSITIVE FEEDBACK (180 SEC / 6 CATEGORIEËN) ---
-        function runPositiveFeedback() {
+        function runFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
-            let timeLeft = 180; 
-            const feedbackInterval = setInterval(() => {
-                let degrees = (180 - timeLeft) * 2;
+            let timeLeft = 180;
+            const flowInt = setInterval(() => {
+                // RESET CIRKEL ELKE 30 SECONDEN
+                let elapsedInSegment = (180 - timeLeft) % 30;
+                let degrees = (elapsedInSegment / 30) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
-
+                
                 let idx = Math.floor((180 - timeLeft) / 30);
-                if (selectedTexts[idx]) {
-                    title.innerText = selectedTexts[idx].title;
-                    sub.innerText = selectedTexts[idx].text;
+                if (idx < 6 && selectedTexts[idx]) { 
+                    title.innerText = selectedTexts[idx].title; 
+                    sub.innerText = selectedTexts[idx].text; 
                 }
-
-                if (timeLeft-- <= 0) { clearInterval(feedbackInterval); runBreathing(); }
+                if (timeLeft-- <= 0) { clearInterval(flowInt); runBreathing(); }
             }, 1000);
         }
 
-        // --- FASE 2: BOX BREATHING (180 SEC) ---
         function runBreathing() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
-            pie.style.background = "var(--light-gray)";
-            pie.style.transform = "scale(1.0)";
-            
+            pie.style.background = "var(--light-gray)"; pie.style.transform = "scale(1.0)";
             let time = 180, step = 4, phase = 0;
             const bInt = setInterval(() => {
                 if (time > 150) { 
                     title.innerText = "Focus op ademhaling"; 
-                    sub.innerText = "Bereid je voor op de Box-ademhaling. Volg rustig het ritme van de cirkel."; 
+                    sub.innerText = "Volg rustig het ritme van de cirkel."; 
                     content.innerText = time - 150; 
                 }
                 else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                    const msgs = ["Vul je longen met nieuwe energie...", "Houd deze rust even vast...", "Laat alle resterende spanning los...", "Ontspan in de stilte..."];
-                    
-                    title.innerText = (time <= 16 ? "Laatste ronde: " : "") + p[phase];
-                    sub.innerText = msgs[phase]; // Tekst verandert nu correct mee!
-                    content.innerText = step;
-
+                    title.innerText = p[phase]; sub.innerText = "Volg de cijfers..."; content.innerText = step;
                     if (phase === 0) pie.style.transform = "scale(1.25)";
                     if (phase === 2) pie.style.transform = "scale(1.0)";
-
                     if (step-- <= 1) { step = 4; phase = (phase + 1) % 4; }
                 }
-
-                if (time-- <= 0) { 
-                    clearInterval(bInt); 
-                    title.innerText = "Optimaal Hersteld"; 
-                    sub.innerText = "Je herstel is nu optimaal gestart. Geniet van je herwonnen kracht en focus!"; 
-                    content.innerText = "✓"; 
-                    setTimeout(() => location.reload(), 15000); 
-                }
+                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
             }, 1000);
         }
-
-        // Elke 3 seconden checken op signaal van trainer
         setInterval(checkInbox, 3000);
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => console.log("SW OK"));
+        }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Service Worker Geregistreerd"));
-  }
-</script>
 </body>
 </html>
