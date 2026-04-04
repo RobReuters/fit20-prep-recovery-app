@@ -3,13 +3,13 @@
   "name": "fit20 Recovery Program",
   "icons": [
     {
-      "src": "fit20-logo.png",
+      "src": "fit20-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "fit20-logo.png",
+      "src": "fit20-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
