@@ -43,14 +43,27 @@
         .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 750px; min-height: 4.5em; }
 
         /* VISUELE CIRKEL & TAARTPUNT */
-        .visual-circle {
-            width: 280px; height: 280px; border-radius: 50%;
-            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg);
-            display: flex; justify-content: center; align-items: center;
-            margin: 3vh 0; position: relative; transition: transform 4s linear, background 4s linear;
+        .visual-circle { 
+            width: 240px; 
+            height: 240px; 
+            flex-shrink: 0; /* DIT VOORKOMT HET PLAT SLAAN */
+            border-radius: 50%; 
+            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 2vh 0; 
+            position: relative; 
+            transition: transform 4s linear; 
         }
-        .visual-circle::after { content: ""; width: 260px; height: 260px; background: white; border-radius: 50%; position: absolute; }
-        #circleContent { z-index: 5; font-size: 5vw; font-weight: 800; color: var(--fit20-green); }
+        .visual-circle::after { 
+            content: ""; 
+            width: 220px; 
+            height: 220px; 
+            background: white; 
+            border-radius: 50%; 
+            position: absolute; 
+        }
 
         #startActionBtn {
             padding: 6vh 12vw; background: var(--fit20-green); color: white;
