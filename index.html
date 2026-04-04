@@ -248,5 +248,11 @@
         // Elke 3 seconden checken op signaal van trainer
         setInterval(checkInbox, 3000);
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Geregistreerd"));
+  }
+</script>
 </body>
 </html>
