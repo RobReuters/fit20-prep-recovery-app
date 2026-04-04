@@ -5,68 +5,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fit20 Trainer Remote</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #FFF; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 90%; max-width: 400px; padding: 25px; border: 1px solid #eee; border-radius: 15px; }
-        h2 { font-weight: 300; text-transform: uppercase; color: #8BC63F; margin-bottom: 20px; text-align: center; }
-        
-        .section-title { font-weight: bold; margin: 15px 0 10px; font-size: 0.9rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
-        
-        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 15px; }
-        .checkbox-item { display: flex; align-items: center; font-size: 0.9rem; cursor: pointer; }
-        .checkbox-item input { margin-right: 8px; width: 18px; height: 18px; accent-color: #8BC63F; }
+        :root {
+            --fit20-green: #8BC63F;
+            --antraciet: #333333;
+            --bg-light: #f4f7f6;
+        }
 
-        button { width: 100%; padding: 18px; background: #8BC63F; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #status { margin-top: 15px; font-size: 0.85rem; color: #999; text-align: center; }
-        .logo { position: fixed; bottom: 10px; right: 10px; width: 70px; opacity: 0.4; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--antraciet); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+
+        .container { 
+            width: 90%; 
+            max-width: 450px; 
+            background: white;
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center; 
+        }
+
+        h2 { 
+            font-weight: 300; 
+            text-transform: uppercase; 
+            color: var(--fit20-green); 
+            margin-bottom: 25px; 
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label.main-label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 8px; 
+            font-size: 0.9rem; 
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        input[type="text"] { 
+            width: 100%; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            box-sizing: border-box; 
+            background: #fafafa;
+        }
+
+        .checkbox-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        .checkbox-item { 
+            display: flex; 
+            align-items: center; 
+            font-size: 0.95rem; 
+            cursor: pointer; 
+            user-select: none;
+        }
+
+        .checkbox-item input { 
+            margin-right: 10px; 
+            width: 20px; 
+            height: 20px; 
+            accent-color: var(--fit20-green);
+            cursor: pointer;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 20px; 
+            background: var(--fit20-green); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 6px 15px rgba(139, 198, 63, 0.3);
+            transition: transform 0.1s, background 0.2s;
+            margin-top: 10px;
+        }
+
+        button:active { transform: scale(0.98); }
+        button:hover { background: #7ab335; }
+
+        #status { 
+            margin-top: 20px; 
+            font-size: 0.9rem; 
+            color: #888; 
+            min-height: 1.2em;
+        }
+
+        .logo { 
+            position: fixed; 
+            bottom: 15px; 
+            right: 15px; 
+            width: 80px; 
+            opacity: 0.4; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>fit20 Remote</h2>
         
-        <input type="text" id="klantNaam" placeholder="Naam van het lid..." autofocus>
-        
-        <div class="section-title">GESLACHT (Kies één of meer)</div>
-        <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" name="gender" value="m"> Man</label>
-            <label class="checkbox-item"><input type="checkbox" name="gender" value="v"> Vrouw</label>
-            <label class="checkbox-item"><input type="checkbox" name="gender" value="both" checked> Neutraal</label>
+        <div class="input-group">
+            <label class="main-label">Naam van het lid</label>
+            <input type="text" id="klantNaam" placeholder="Bijv. Jan Janssen" autofocus>
         </div>
 
-        <div class="section-title">PROFIEL (Kies één of meer)</div>
-        <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" name="profile" value="all" checked> Algemeen (A)</label>
-            <label class="checkbox-item"><input type="checkbox" name="profile" value="b"> Prestatie (B)</label>
-            <label class="checkbox-item"><input type="checkbox" name="profile" value="c"> Rust (C)</label>
-            <label class="checkbox-item"><input type="checkbox" name="profile" value="d"> Medisch (D)</label>
+        <div class="input-group">
+            <label class="main-label">Geslacht (meerdere mogelijk)</label>
+            <div class="checkbox-container">
+                <label class="checkbox-item"><input type="checkbox" name="gender" value="m"> Man</label>
+                <label class="checkbox-item"><input type="checkbox" name="gender" value="v"> Vrouw</label>
+                <label class="checkbox-item"><input type="checkbox" name="gender" value="both" checked> Neutraal</label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="main-label">Klantprofiel (meerdere mogelijk)</label>
+            <div class="checkbox-container">
+                <label class="checkbox-item"><input type="checkbox" name="profile" value="all" checked> Algemeen</label>
+                <label class="checkbox-item"><input type="checkbox" name="profile" value="b"> Performance</label>
+                <label class="checkbox-item"><input type="checkbox" name="profile" value="c"> Gezondheid</label>
+                <label class="checkbox-item"><input type="checkbox" name="profile" value="d"> Anti-Stress</label>
+            </div>
         </div>
 
         <button id="startBtn">START RECOVERY</button>
         <div id="status">Klaar voor verzending</div>
     </div>
-    <img src="fit20-logo.png" class="logo">
+    
+    <img src="fit20-logo.png" class="logo" alt="fit20">
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
 
         document.getElementById('startBtn').addEventListener('click', async function() {
-            const naam = document.getElementById('klantNaam').value;
+            const naamInput = document.getElementById('klantNaam');
+            const naam = naamInput.value.trim();
             const status = document.getElementById('status');
 
-            // Verzamel aangevinkte waarden
-            const selectedGenders = Array.from(document.querySelectorAll('input[name="gender"]:checked')).map(el => el.value);
-            const selectedProfiles = Array.from(document.querySelectorAll('input[name="profile"]:checked')).map(el => el.value);
+            // Verzamel alle aangevinkte genders
+            const selectedGenders = Array.from(document.querySelectorAll('input[name="gender"]:checked'))
+                                         .map(el => el.value);
+            
+            // Verzamel alle aangevinkte profielen
+            const selectedProfiles = Array.from(document.querySelectorAll('input[name="profile"]:checked'))
+                                          .map(el => el.value);
 
-            if (!naam) return alert("Vul een naam in");
+            if (!naam) {
+                alert("Vul a.u.b. een naam in");
+                return;
+            }
+
+            if (selectedGenders.length === 0 || selectedProfiles.length === 0) {
+                alert("Selecteer a.u.b. minimaal één geslacht en één profiel.");
+                return;
+            }
 
             status.innerText = "Bezig met verzenden...";
+            status.style.color = "#888";
             
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Master-Key': MASTER_KEY 
+                    },
                     body: JSON.stringify({ 
                         "user": naam, 
                         "program": "recovery",
@@ -74,9 +202,21 @@
                         "profiles": selectedProfiles
                     })
                 });
-                status.innerText = "Succes! " + naam + " geactiveerd.";
-                document.getElementById('klantNaam').value = "";
-            } catch (e) { status.innerText = "Fout bij verbinding."; }
+
+                if (response.ok) {
+                    status.innerText = "Succes! " + naam + " is geactiveerd.";
+                    status.style.color = "#8BC63F";
+                    naamInput.value = "";
+                    // Optioneel: focus terug naar input voor de volgende klant
+                    naamInput.focus();
+                } else {
+                    status.innerText = "Fout bij verzenden naar server.";
+                    status.style.color = "red";
+                }
+            } catch (e) {
+                status.innerText = "Netwerkfout. Controleer internetverbinding.";
+                status.style.color = "red";
+            }
         });
     </script>
 </body>
