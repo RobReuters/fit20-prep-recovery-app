@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>fit20 Recovery</title>
-    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --fit20-green: #8BC63F;
             --antraciet: #333333;
         }
 
-        /* Reset alle browser marges */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body { 
             background: #FFFFFF; 
             color: var(--antraciet); 
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             height: 100vh; 
             width: 100vw;
             overflow: hidden; 
@@ -27,19 +29,18 @@
             position: relative;
         }
 
-        /* Logo ECHT rechtsonderin */
+        /* Logo ECHT in de hoek zonder witruimte */
         .logo { 
             position: absolute; 
-            bottom: 20px; 
-            right: 20px; 
-            width: 25vw;
-            max-width: 280px;
+            bottom: 2vh; 
+            right: 2vw; 
+            width: 30vw; /* Nu 2x zo groot als voorheen */
+            max-width: 350px;
             z-index: 10;
         }
 
-        /* Container die alles exact in het midden houdt */
         .main-container {
-            width: 90%;
+            width: 95%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -50,51 +51,47 @@
         .welcome-text {
             font-weight: 300;
             text-transform: uppercase;
-            letter-spacing: 0.3vw;
+            letter-spacing: 0.2vw;
             color: #999;
             font-size: 2vw;
-            margin-bottom: 1vh;
-            width: 100%;
+            margin-bottom: 2vh;
         }
 
         .name { 
-            font-size: 7vw; 
+            font-size: 8vw; 
             font-weight: 700; 
             margin-bottom: 2vh;
-            width: 100%;
             line-height: 1;
         }
 
         .message {
-            font-size: 2.8vw;
-            max-width: 700px;
-            margin: 0 auto 4vh auto;
-            line-height: 1.4;
+            font-size: 3vw;
+            max-width: 800px;
+            margin: 0 auto 5vh auto;
+            line-height: 1.5;
             color: #555;
         }
 
         #timer { 
-            font-size: 22vw; 
+            font-size: 25vw; 
             font-weight: 800; 
             color: var(--fit20-green); 
-            line-height: 1;
+            line-height: 0.9;
         }
 
         #startActionBtn {
-            padding: 2.5vh 7vw;
+            padding: 3vh 10vw;
             background: var(--fit20-green);
             color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 3.5vw;
+            border-radius: 60px;
+            font-size: 4vw;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(139, 198, 63, 0.3);
-            transition: transform 0.2s;
+            box-shadow: 0 12px 24px rgba(139, 198, 63, 0.3);
         }
-        #startActionBtn:active { transform: scale(0.95); }
 
-        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 12px; background: #f0f0f0; }
+        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 15px; background: #f0f0f0; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
         
         .hidden { display: none !important; }
@@ -106,7 +103,7 @@
         <p class="welcome-text">Welcome to the fit20 recovery program</p>
         <div class="name" id="userName">Systeem Gereed</div>
         <div class="message" id="personalMsg">Wachten op activatie door je trainer...</div>
-        <button id="startActionBtn" class="hidden">START NU</button>
+        <button id="startActionBtn" class="hidden">START</button>
     </div>
 
     <div class="main-container hidden" id="timerArea">
@@ -115,7 +112,8 @@
     </div>
 
     <div class="progress"><div id="bar"></div></div>
-    <img src="fit20-logo.png" class="logo" alt="fit20">
+    
+    <img src="fit20-logo.png?v=1" class="logo" alt="fit20">
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
@@ -127,9 +125,9 @@
             if (isSessionActive) return;
 
             try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY },
-                    cache: 'no-store'
+                // ?t=[timestamp] dwingt de browser elke 3 sec een verse check te doen (geen cache!)
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 const data = await res.json();
                 
@@ -137,7 +135,7 @@
                     prepareSession(data.record.user);
                     await resetBin();
                 }
-            } catch (e) { console.log("Check..."); }
+            } catch (e) { console.log("Polling..."); }
         }
 
         function prepareSession(name) {
