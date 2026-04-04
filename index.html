@@ -4,42 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="fit20-icon.png">
+    <meta name="theme-color" content="#8BC63F">
+    
     <title>fit20 Recovery</title>
+    
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
-        .top-section { height: 10vh; width: 100%; padding: 20px; }
+        
+        body { 
+            background: #FFF; 
+            color: var(--antraciet); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            height: 100vh; 
+            width: 100vw; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 15vw; text-align: center; }
         .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+
         .logo { position: absolute; bottom: 30px; right: 30px; width: 30vw; max-width: 300px; z-index: 100; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
+
         .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
-        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 800px; min-height: 4.5em; }
-        .visual-circle { width: 240px; height: 240px; flex-shrink: 0; border-radius: 50%; background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); display: flex; justify-content: center; align-items: center; margin: 2vh 0; position: relative; transition: transform 4s linear; }
-        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
-        #circleContent { z-index: 10; font-size: 6vw; font-weight: 800; color: var(--fit20-green); position: relative; }
-        #startActionBtn { padding: 6vh 12vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5.5vw; font-weight: bold; cursor: pointer; }
+        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 850px; min-height: 4.5em; }
+
+        /* CIRKEL STYLING - FLEX-SHRINK 0 VOORKOMT OVALE VORM */
+        .visual-circle { 
+            width: 240px; 
+            height: 240px; 
+            flex-shrink: 0; 
+            border-radius: 50%; 
+            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 2vh 0; 
+            position: relative; 
+            transition: transform 4s linear; 
+        }
+
+        .visual-circle::after { 
+            content: ""; 
+            width: 220px; 
+            height: 220px; 
+            background: white; 
+            border-radius: 50%; 
+            position: absolute; 
+            z-index: 1; 
+        }
+
+        #circleContent { 
+            z-index: 10; 
+            font-size: 6vw; 
+            font-weight: 800; 
+            color: var(--fit20-green); 
+            position: relative; 
+        }
+
+        #startActionBtn { 
+            padding: 5vh 10vw; 
+            background: var(--fit20-green); 
+            color: white; 
+            border: none; 
+            border-radius: 20px; 
+            font-size: 5vw; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 15px 30px rgba(139,198,63,0.4); 
+        }
+
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
+        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div></div>
+    <div class="top-section">
+        <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
+    </div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 7vw; margin-bottom: 2vh;">Laden...</h1>
-        <p class="sub-text" id="personalMsg">Cloud-data ophalen...</p>
+        <p class="sub-text" id="personalMsg">Bezig met ophalen van cloud-data.</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
-        <div class="visual-circle" id="circlePie"><div id="circleContent"></div></div>
+        <div class="visual-circle" id="circlePie">
+            <div id="circleContent"></div>
+        </div>
         <p class="sub-text" id="mainSubText">...</p>
     </div>
 
@@ -58,29 +127,38 @@
         async function loadReservoir() {
             const msg = document.getElementById('personalMsg');
             try {
-                // Gebruik een tijdstempel om caching te voorkomen
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(SHEET_CSV_URL)}&t=${Date.now()}`;
-                const res = await fetch(proxyUrl);
+                // POGING 1: Direct ophalen
+                let res = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
                 
-                if (!res.ok) throw new Error("Netwerkverbinding mislukt");
-                
-                const json = await res.json();
-                if (!json.contents) throw new Error("Geen data ontvangen van Sheet");
+                // POGING 2: Fallback via proxy als direct mislukt
+                if (!res.ok) {
+                    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_CSV_URL);
+                    const proxyRes = await fetch(proxy);
+                    const json = await proxyRes.json();
+                    var csvText = json.contents;
+                } else {
+                    var csvText = await res.text();
+                }
 
-                const lines = json.contents.split(/\r?\n/).filter(l => l.trim() !== "");
+                if (!csvText || csvText.includes("<!DOCTYPE html>")) throw new Error("Geen CSV data");
+
+                const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
                 reservoir = lines.slice(1).map(line => {
                     const c = line.includes(';') ? line.split(';') : line.split(',');
                     if (c.length < 4) return null;
-                    return { cat: c[0]?.trim().toLowerCase(), gender: c[1]?.trim().toLowerCase(), profile: c[2]?.trim().toLowerCase(), title: c[3]?.trim(), text: c[4]?.trim() };
+                    return { 
+                        cat: c[0]?.trim().toLowerCase(), 
+                        gender: c[1]?.trim().toLowerCase(), 
+                        profile: c[2]?.trim().toLowerCase(), 
+                        title: c[3]?.trim(), 
+                        text: c[4]?.trim() 
+                    };
                 }).filter(i => i !== null);
-
-                if (reservoir.length === 0) throw new Error("De spreadsheet lijkt leeg");
 
                 document.getElementById('userName').innerText = "Systeem Gereed";
                 msg.innerText = "Wachten op activatie door trainer...";
             } catch (e) {
-                msg.innerHTML = `<span style="color:red"><b>Fout:</b> ${e.message}</span><br><small>Check of de sheet op 'Openbaar / CSV' staat.</small>`;
-                console.error(e);
+                msg.innerHTML = "<span style='color:red'><b>Verbindingsfout:</b> Failed to fetch</span><br><small>Herstart de app of check of de sheet op 'Openbaar' staat.</small>";
             }
         }
         loadReservoir();
@@ -96,7 +174,13 @@
                     document.getElementById('personalMsg').innerText = "Klaar voor herstel? Neem plaats en druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     selectedTexts = ["a","b","c","d","e","f"].map(cat => pickText(cat));
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle", "genders":[], "profiles":[] }) });
+                    
+                    // Reset de bin
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { 
+                        method: 'PUT', 
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, 
+                        body: JSON.stringify({ "user": "", "program": "idle", "genders":[], "profiles":[] }) 
+                    });
                 }
             } catch (e) {}
         }
@@ -111,48 +195,81 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
-            const masterTimer = setInterval(() => {
+            
+            const timerInt = setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((600 - overallSeconds) / 600) * 100}%`;
-                if (overallSeconds-- <= 0) { clearInterval(masterTimer); location.reload(); }
+                if (overallSeconds-- <= 0) { clearInterval(timerInt); location.reload(); }
             }, 1000);
+            
             runFlow();
         });
 
         function runFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
             let timeLeft = 180;
+            
             const flowInt = setInterval(() => {
+                // RESET CIRKEL ELKE 30 SEC
                 let elapsedInSegment = (180 - timeLeft) % 30;
                 let degrees = (elapsedInSegment / 30) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
+                
                 let idx = Math.floor((180 - timeLeft) / 30);
                 if (idx < 6 && selectedTexts[idx]) { 
                     title.innerText = selectedTexts[idx].title; 
                     sub.innerText = selectedTexts[idx].text; 
                 }
-                if (timeLeft-- <= 0) { clearInterval(flowInt); runBreathing(); }
+                
+                if (timeLeft-- <= 0) { 
+                    clearInterval(flowInt); 
+                    runBreathing(); 
+                }
             }, 1000);
         }
 
         function runBreathing() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
-            pie.style.background = "var(--light-gray)"; pie.style.transform = "scale(1.0)";
+            pie.style.background = "var(--light-gray)"; 
+            pie.style.transform = "scale(1.0)";
+            
             let time = 180, step = 4, phase = 0;
+            
             const bInt = setInterval(() => {
-                if (time > 150) { title.innerText = "Focus op ademhaling"; sub.innerText = "Volg het ritme."; content.innerText = time - 150; }
-                else {
+                if (time > 150) { 
+                    title.innerText = "Focus op ademhaling"; 
+                    sub.innerText = "Volg rustig het ritme van de cirkel."; 
+                    content.innerText = time - 150; 
+                } else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                    title.innerText = p[phase]; sub.innerText = "Volg de cijfers..."; content.innerText = step;
+                    title.innerText = p[phase]; 
+                    sub.innerText = "Focus op je ademhaling..."; 
+                    content.innerText = step;
+                    
                     if (phase === 0) pie.style.transform = "scale(1.25)";
                     if (phase === 2) pie.style.transform = "scale(1.0)";
-                    if (step-- <= 1) { step = 4; phase = (phase + 1) % 4; }
+                    
+                    if (step-- <= 1) { 
+                        step = 4; 
+                        phase = (phase + 1) % 4; 
+                    }
                 }
-                if (time-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; content.innerText = "✓"; setTimeout(() => location.reload(), 10000); }
+                
+                if (time-- <= 0) { 
+                    clearInterval(bInt); 
+                    title.innerText = "Optimaal Hersteld"; 
+                    content.innerText = "✓"; 
+                    setTimeout(() => location.reload(), 15000); 
+                }
             }, 1000);
         }
+
         setInterval(checkInbox, 3000);
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker OK"));
+        }
     </script>
 </body>
 </html>
