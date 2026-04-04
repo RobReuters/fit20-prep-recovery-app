@@ -22,75 +22,77 @@
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* Logo rechtsonder */
         .logo { position: absolute; bottom: 2vh; right: 2vw; width: 25vw; max-width: 280px; z-index: 10; }
 
-        /* Overall Timer linksboven */
+        /* Timer linksboven zonder 'Overall' */
         #overallTimer {
             position: absolute;
             top: 20px;
             left: 20px;
-            font-size: 2.5vw;
+            font-size: 3vw;
             font-weight: 700;
-            color: #ccc;
+            color: #ddd;
         }
 
         .main-container {
             width: 90%;
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: opacity 0.5s ease;
         }
 
         /* Grote Startknop voor trillende handen */
         #startActionBtn {
-            padding: 8vh 15vw; /* Twee keer zo hoog gemaakt */
+            padding: 8vh 15vw;
             background: var(--fit20-green);
             color: white; border: none; border-radius: 20px;
             font-size: 6vw; font-weight: bold;
             cursor: pointer; box-shadow: 0 15px 30px rgba(139, 198, 63, 0.4);
-            transition: transform 0.1s;
         }
-        #startActionBtn:active { transform: scale(0.95); }
 
         /* Box Breathing Animatie */
         .breath-circle {
             width: 300px; height: 300px;
             border-radius: 50%;
-            background: rgba(139, 198, 63, 0.1);
-            border: 4px solid var(--fit20-green);
+            background: rgba(139, 198, 63, 0.05);
+            border: 6px solid var(--fit20-green);
             display: flex; justify-content: center; align-items: center;
-            font-size: 2vw; font-weight: bold;
-            transition: all 4s linear; /* De 4 seconden van de box */
-            margin: 40px 0;
+            font-size: 3vw; font-weight: bold;
+            transition: transform 4s linear, background 4s linear;
+            margin: 4vh 0;
         }
 
-        .breath-instruction { font-size: 4vw; font-weight: 700; margin-bottom: 20px; height: 1.2em; }
-        .sub-text { font-size: 2vw; color: #888; max-width: 600px; height: 3em; }
+        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; min-height: 1.2em; color: var(--antraciet); }
+        .sub-text { font-size: 2.2vw; color: #777; max-width: 850px; line-height: 1.5; min-height: 3em; }
 
         .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 15px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
         
         .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 1s forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="overallTimer" class="hidden">OVERALL: <span id="timeVal">10:00</span></div>
+    <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
 
     <div class="main-container" id="setupArea">
         <p style="text-transform: uppercase; letter-spacing: 2px; color: #999;">Welcome to the fit20 recovery program</p>
         <h1 id="userName" style="font-size: 6vw; margin: 2vh 0;">Hallo!</h1>
-        <p class="sub-text" id="personalMsg">Wachten op activatie...</p>
+        <p class="sub-text">Wachten op activatie door je trainer...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
-    <div class="main-container hidden" id="prepArea">
-        <div class="breath-instruction" id="breathTitle">Even tot rust komen...</div>
-        <div class="breath-circle" id="circle">4</div>
-        <p class="sub-text" id="breathSubText">Focus op je ademhaling en laat je schouders zakken.</p>
+    <div class="main-container hidden" id="actionArea">
+        <div class="instruction-title" id="mainTitle">Lichaamsbewustzijn</div>
+        <div id="visualElement">
+            <div class="breath-circle" id="circle" style="border-color: #ddd;">...</div>
+        </div>
+        <p class="sub-text" id="mainSubText">Maak contact met je lichaam.</p>
     </div>
 
     <div class="progress"><div id="bar"></div></div>
-    <img src="fit20-logo.png" class="logo" alt="fit20">
+    <img src="fit20-logo.png?v=2" class="logo" alt="fit20">
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
@@ -99,31 +101,26 @@
         let isSessionActive = false;
         let overallSeconds = 600;
 
-        // Polling
         async function checkInbox() {
             if (isSessionActive) return;
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
-                    prepareSession(data.record.user);
+                    document.getElementById('userName').innerText = "Hallo " + data.record.user;
+                    document.getElementById('startActionBtn').classList.remove('hidden');
                     await resetBin();
                 }
             } catch (e) { console.log("Check..."); }
-        }
-
-        function prepareSession(name) {
-            document.getElementById('userName').innerText = "Hallo " + name;
-            document.getElementById('personalMsg').innerText = "Je hebt hard getraind vandaag. Goed gedaan! Ga rustig zitten en klik op 'Start'.";
-            document.getElementById('startActionBtn').classList.remove('hidden');
         }
 
         document.getElementById('startActionBtn').addEventListener('click', function() {
             isSessionActive = true;
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
+            document.getElementById('actionArea').classList.remove('hidden');
             startOverallTimer();
-            runBoxBreathing();
+            runPositiveFeedback();
         });
 
         function startOverallTimer() {
@@ -137,55 +134,92 @@
             }, 1000);
         }
 
-        async function runBoxBreathing() {
-            const area = document.getElementById('prepArea');
-            const title = document.getElementById('breathTitle');
-            const sub = document.getElementById('breathSubText');
+        // --- FASE 1: POSITIVE FEEDBACK (2 MINUTEN) ---
+        function runPositiveFeedback() {
+            const title = document.getElementById('mainTitle');
+            const sub = document.getElementById('mainSubText');
             const circle = document.getElementById('circle');
-            area.classList.remove('hidden');
+            
+            let timeLeft = 120; 
+            const feedbackInterval = setInterval(() => {
+                circle.innerText = timeLeft;
+                if (timeLeft > 100) {
+                    title.innerText = "Geweldig gedaan";
+                    sub.innerText = "Je hebt je lichaam zojuist een krachtige prikkel gegeven. Voel je hartslag... dit is je motor die op volle toeren werkt voor herstel.";
+                } else if (timeLeft > 80) {
+                    title.innerText = "Zelfgenezing";
+                    sub.innerText = "Terwijl je hier zit, stroomt zuurstofrijk bloed naar je spieren. Je lichaam repareert en versterkt elke vezel die je hebt aangesproken.";
+                } else if (timeLeft > 50) {
+                    title.innerText = "Verjonging";
+                    sub.innerText = "Groeihormonen komen nu vrij. Je bent niet alleen aan het herstellen, je bent je lichaam aan het verjongen en krachtiger aan het maken.";
+                } else if (timeLeft > 20) {
+                    title.innerText = "Bewondering";
+                    sub.innerText = "Sta even stil bij de intelligentie van je cellen. Zonder dat je erover nadenkt, bouwt je lichaam nu aan een sterkere versie van jezelf.";
+                } else if (timeLeft > 0) {
+                    title.innerText = "Maak je klaar";
+                    sub.innerText = "We gaan nu over naar de ademhaling om dit herstelproces verder te verdiepen. Ontspan je schouders.";
+                }
 
-            // FASE 1: 30 Seconden rust
-            let prepTime = 30;
-            const prepInterval = setInterval(() => {
-                title.innerText = "Moment voor jezelf...";
-                circle.innerText = prepTime;
-                if (prepTime === 20) sub.innerText = "Adem rustig in door je neus...";
-                if (prepTime === 10) sub.innerText = "En langzaam uit door je mond...";
-                if (prepTime-- <= 0) {
-                    clearInterval(prepInterval);
-                    startBoxCycles();
+                if (timeLeft-- <= 0) {
+                    clearInterval(feedbackInterval);
+                    runBoxBreathing();
                 }
             }, 1000);
+        }
 
-            function startBoxCycles() {
-                let phase = 0; // 0:In, 1:Hold, 2:Out, 3:Hold
-                const phases = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                const messages = ["Vul je longen...", "Ontspan je kaken...", "Laat alles los...", "Rustig blijven..."];
-                
-                let cycleTime = 4;
-                const cycleInterval = setInterval(() => {
-                    title.innerText = phases[phase];
-                    sub.innerText = messages[phase];
-                    circle.innerText = cycleTime;
+        // --- FASE 2: BOX BREATHING (3 MINUTEN TOTAAL) ---
+        function runBoxBreathing() {
+            const title = document.getElementById('mainTitle');
+            const sub = document.getElementById('mainSubText');
+            const circle = document.getElementById('circle');
+            circle.style.borderColor = "var(--fit20-green)";
 
-                    // Animatie aansturing
-                    if (phase === 0) { // Inademen
-                        circle.style.transform = "scale(1.5)";
-                        circle.style.background = "rgba(139, 198, 63, 0.3)";
-                    } else if (phase === 2) { // Uitademen
-                        circle.style.transform = "scale(1.0)";
-                        circle.style.background = "rgba(139, 198, 63, 0.1)";
+            let totalBreathTime = 180; // 30 sec prep + 150 sec cycles
+            let phase = -1; // -1 is prep
+            let cycleStep = 4;
+            let cyclePhase = 0; // 0:In, 1:Hold, 2:Out, 3:Hold
+
+            const breathInterval = setInterval(() => {
+                if (totalBreathTime > 150) {
+                    // Prep fase (30 sec)
+                    title.innerText = "Klaar voor de Box?";
+                    sub.innerText = "Volg dadelijk de cirkel. Rustig in, vasthouden, rustig uit, vasthouden.";
+                    circle.innerText = totalBreathTime - 150;
+                } else {
+                    // Cycle fase
+                    const phases = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
+                    const msgs = ["Vul je longen met energie...", "Laat de rust neerdalen...", "Laat alle spanning los...", "Geniet van de stilte..."];
+                    
+                    // Laatste cyclus check (laatste 16 seconden)
+                    if (totalBreathTime <= 16) {
+                        title.innerText = "Laatste ronde: " + phases[cyclePhase];
+                    } else {
+                        title.innerText = phases[cyclePhase];
                     }
+                    
+                    sub.innerText = msgs[cyclePhase];
+                    circle.innerText = cycleStep;
 
-                    if (cycleTime-- <= 1) {
-                        cycleTime = 4;
-                        phase = (phase + 1) % 4;
+                    if (cyclePhase === 0) { circle.style.transform = "scale(1.4)"; circle.style.background = "rgba(139, 198, 63, 0.15)"; }
+                    if (cyclePhase === 2) { circle.style.transform = "scale(1.0)"; circle.style.background = "rgba(139, 198, 63, 0.02)"; }
+
+                    if (cycleStep-- <= 1) {
+                        cycleStep = 4;
+                        cyclePhase = (cyclePhase + 1) % 4;
                     }
+                }
 
-                    // Stop Box Breathing na 3 minuten totaal (30 sec prep + 150 sec cycles)
-                    // Voor nu laten we hem even doorlopen tot de overall timer ingrijpt of we voegen een stop toe
-                }, 1000);
-            }
+                if (totalBreathTime-- <= 0) {
+                    clearInterval(breathInterval);
+                    // Positieve confirmatie aan het eind
+                    title.innerText = "Volledig Hersteld";
+                    sub.innerText = "Heel goed gedaan. Je zenuwstelsel is nu in balans en je herstel is optimaal gestart. Geniet van je dag!";
+                    circle.innerText = "✓";
+                    circle.style.transform = "scale(1.2)";
+                    // Na 10 seconden terug naar startscherm
+                    setTimeout(() => location.reload(), 10000);
+                }
+            }, 1000);
         }
 
         async function resetBin() {
