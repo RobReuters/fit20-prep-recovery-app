@@ -5,98 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fit20 Trainer Remote</title>
     <style>
-        body { 
-            font-family: sans-serif; 
-            background-color: #FFFFFF; 
-            color: #333333; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        .container { 
-            width: 85%; 
-            max-width: 350px; 
-            text-align: center;
-        }
-        .logo-bottom-right {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 80px;
-        }
-        h2 { font-weight: 300; text-transform: uppercase; margin-bottom: 30px; color: #555; }
-        input { 
-            width: 100%; 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; 
-            padding: 15px; 
-            background-color: #8BC63F; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer;
-        }
-        #status { margin-top: 20px; color: #888; font-size: 0.9rem; }
+        body { font-family: sans-serif; background: #FFF; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 85%; max-width: 350px; text-align: center; }
+        .logo { position: absolute; bottom: 20px; right: 20px; width: 100px; opacity: 0.8; }
+        h2 { font-weight: 300; text-transform: uppercase; color: #666; margin-bottom: 30px; }
+        input { width: 100%; padding: 15px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #8BC63F; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 20px; font-size: 0.9rem; color: #999; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Trainer Remote</h2>
+        <input type="text" id="klantNaam" placeholder="Naam lid..." autofocus>
+        <button id="startBtn">START RECOVERY</button>
+        <div id="status">Gereed voor invoer</div>
+    </div>
+    <img src="fit20-logo.png" class="logo" alt="fit20">
 
-<div class="container">
-    <h2>Trainer Remote</h2>
-    <input type="text" id="klantNaam" placeholder="Naam lid...">
-    <button id="startBtn">Start Recovery</button>
-    <div id="status">Gereed</div>
-</div>
+    <script>
+        const BIN_ID = '69d00c00856a682189f8b7f6';
+        const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
 
-<img src="fit20-logo.png" class="logo-bottom-right" alt="Logo">
+        document.getElementById('startBtn').addEventListener('click', async function() {
+            const naam = document.getElementById('klantNaam').value;
+            const status = document.getElementById('status');
+            if (!naam) return alert("Vul een naam in");
 
-<script>
-    const BIN_ID = 'JOUW_BIN_ID'; 
-    const API_KEY = 'JOUW_API_KEY';
+            status.innerText = "Verbinding maken...";
+            
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ "user": naam, "program": "recovery" })
+                });
 
-    document.getElementById('startBtn').addEventListener('click', async function() {
-        const naam = document.getElementById('klantNaam').value;
-        const status = document.getElementById('status');
-
-        if (!naam) {
-            alert("Vul een naam in");
-            return;
-        }
-
-        status.innerText = "Verzenden naar tablet...";
-
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': API_KEY
-                },
-                body: JSON.stringify({ "user": naam, "program": "recovery" })
-            });
-
-            if (response.ok) {
-                status.innerText = "Succes: " + naam + " gestart!";
-                document.getElementById('klantNaam').value = "";
-            } else {
-                status.innerText = "Fout bij verzenden.";
+                if (response.ok) {
+                    status.innerText = "Gezonden! " + naam + " is geactiveerd.";
+                    document.getElementById('klantNaam').value = "";
+                } else {
+                    const err = await response.json();
+                    status.innerText = "Fout: " + (err.message || "Server error");
+                }
+            } catch (e) {
+                status.innerText = "Netwerkfout: Check internet.";
             }
-        } catch (e) {
-            status.innerText = "Netwerkfout.";
-        }
-    });
-</script>
-
+        });
+    </script>
 </body>
 </html>
