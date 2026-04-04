@@ -5,58 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fit20 Trainer Remote</title>
     <style>
-        body { font-family: sans-serif; background: #FFF; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 90%; max-width: 400px; text-align: center; padding: 20px; }
-        .logo { position: fixed; bottom: 10px; right: 10px; width: 80px; opacity: 0.5; }
-        h2 { font-weight: 300; text-transform: uppercase; color: #666; margin-bottom: 20px; }
-        label { display: block; text-align: left; margin-bottom: 5px; font-size: 0.9rem; color: #888; }
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #f9f9f9; }
-        button { width: 100%; padding: 20px; background: #8BC63F; color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(139,198,63,0.3); }
-        #status { margin-top: 20px; font-size: 0.9rem; color: #999; font-style: italic; }
+        body { font-family: 'Segoe UI', sans-serif; background: #FFF; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 90%; max-width: 400px; padding: 25px; border: 1px solid #eee; border-radius: 15px; }
+        h2 { font-weight: 300; text-transform: uppercase; color: #8BC63F; margin-bottom: 20px; text-align: center; }
+        
+        .section-title { font-weight: bold; margin: 15px 0 10px; font-size: 0.9rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+        
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 15px; }
+        .checkbox-item { display: flex; align-items: center; font-size: 0.9rem; cursor: pointer; }
+        .checkbox-item input { margin-right: 8px; width: 18px; height: 18px; accent-color: #8BC63F; }
+
+        button { width: 100%; padding: 18px; background: #8BC63F; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #status { margin-top: 15px; font-size: 0.85rem; color: #999; text-align: center; }
+        .logo { position: fixed; bottom: 10px; right: 10px; width: 70px; opacity: 0.4; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>fit20 Remote</h2>
-        <label>Naam van het lid</label>
-        <input type="text" id="klantNaam" placeholder="Typ naam..." autofocus>
-        <label>Geslacht</label>
-        <select id="gender">
-            <option value="both">Neutraal / Beide</option>
-            <option value="m">Man</option>
-            <option value="v">Vrouw</option>
-        </select>
-        <label>Psychologisch Profiel</label>
-        <select id="profile">
-            <option value="all">Algemeen (A)</option>
-            <option value="b">Prestatiegericht (B)</option>
-            <option value="c">Gezondheid & Rust (C)</option>
-        </select>
+        
+        <input type="text" id="klantNaam" placeholder="Naam van het lid..." autofocus>
+        
+        <div class="section-title">GESLACHT (Kies één of meer)</div>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" name="gender" value="m"> Man</label>
+            <label class="checkbox-item"><input type="checkbox" name="gender" value="v"> Vrouw</label>
+            <label class="checkbox-item"><input type="checkbox" name="gender" value="both" checked> Neutraal</label>
+        </div>
+
+        <div class="section-title">PROFIEL (Kies één of meer)</div>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" name="profile" value="all" checked> Algemeen (A)</label>
+            <label class="checkbox-item"><input type="checkbox" name="profile" value="b"> Prestatie (B)</label>
+            <label class="checkbox-item"><input type="checkbox" name="profile" value="c"> Rust (C)</label>
+            <label class="checkbox-item"><input type="checkbox" name="profile" value="d"> Medisch (D)</label>
+        </div>
+
         <button id="startBtn">START RECOVERY</button>
-        <div id="status">Systeem klaar voor gebruik</div>
+        <div id="status">Klaar voor verzending</div>
     </div>
-    <img src="fit20-logo.png" class="logo" alt="fit20">
+    <img src="fit20-logo.png" class="logo">
+
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+
         document.getElementById('startBtn').addEventListener('click', async function() {
             const naam = document.getElementById('klantNaam').value;
-            const gender = document.getElementById('gender').value;
-            const profile = document.getElementById('profile').value;
             const status = document.getElementById('status');
+
+            // Verzamel aangevinkte waarden
+            const selectedGenders = Array.from(document.querySelectorAll('input[name="gender"]:checked')).map(el => el.value);
+            const selectedProfiles = Array.from(document.querySelectorAll('input[name="profile"]:checked')).map(el => el.value);
+
             if (!naam) return alert("Vul een naam in");
-            status.innerText = "Verbinding maken...";
+
+            status.innerText = "Bezig met verzenden...";
+            
             try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                    body: JSON.stringify({ "user": naam, "program": "recovery", "gender": gender, "profile": profile })
+                    body: JSON.stringify({ 
+                        "user": naam, 
+                        "program": "recovery",
+                        "genders": selectedGenders,
+                        "profiles": selectedProfiles
+                    })
                 });
-                if (response.ok) {
-                    status.innerText = "Succes! " + naam + " is geactiveerd.";
-                    document.getElementById('klantNaam').value = "";
-                } else { status.innerText = "Fout bij verzenden."; }
-            } catch (e) { status.innerText = "Netwerkfout."; }
+                status.innerText = "Succes! " + naam + " geactiveerd.";
+                document.getElementById('klantNaam').value = "";
+            } catch (e) { status.innerText = "Fout bij verbinding."; }
         });
     </script>
 </body>
