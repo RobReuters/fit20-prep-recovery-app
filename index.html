@@ -11,89 +11,106 @@
             --antraciet: #333333;
         }
 
+        /* Reset alle browser marges */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body { 
             background: #FFFFFF; 
             color: var(--antraciet); 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
             height: 100vh; 
             width: 100vw;
             overflow: hidden; 
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
-        /* Responsive Logo rechtsonder */
+        /* Logo ECHT rechtsonderin */
         .logo { 
             position: absolute; 
-            bottom: 5vh; 
-            right: 5vw; 
-            width: 25vw; /* Flink groter gemaakt */
-            max-width: 300px;
-            min-width: 150px;
+            bottom: 20px; 
+            right: 20px; 
+            width: 25vw;
+            max-width: 280px;
+            z-index: 10;
+        }
+
+        /* Container die alles exact in het midden houdt */
+        .main-container {
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
 
         .welcome-text {
             font-weight: 300;
             text-transform: uppercase;
             letter-spacing: 0.3vw;
-            color: #888;
-            font-size: 2.5vw; /* Schalende tekst */
-            margin: 0;
+            color: #999;
+            font-size: 2vw;
+            margin-bottom: 1vh;
+            width: 100%;
         }
 
         .name { 
-            font-size: 8vw; 
+            font-size: 7vw; 
             font-weight: 700; 
-            margin: 2vh 0; 
-            line-height: 1.1;
+            margin-bottom: 2vh;
+            width: 100%;
+            line-height: 1;
         }
 
         .message {
-            font-size: 3vw;
-            max-width: 80%;
-            margin-bottom: 4vh;
+            font-size: 2.8vw;
+            max-width: 700px;
+            margin: 0 auto 4vh auto;
             line-height: 1.4;
+            color: #555;
         }
 
         #timer { 
-            font-size: 20vw; 
+            font-size: 22vw; 
             font-weight: 800; 
             color: var(--fit20-green); 
-            margin: 0;
+            line-height: 1;
         }
 
-        /* Grote Startknop voor de klant */
         #startActionBtn {
-            padding: 3vh 8vw;
+            padding: 2.5vh 7vw;
             background: var(--fit20-green);
             color: white;
             border: none;
             border-radius: 50px;
-            font-size: 4vw;
+            font-size: 3.5vw;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(139, 198, 63, 0.3);
+            box-shadow: 0 8px 20px rgba(139, 198, 63, 0.3);
+            transition: transform 0.2s;
         }
+        #startActionBtn:active { transform: scale(0.95); }
 
-        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 1.5vh; background: #EEE; }
+        .progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 12px; background: #f0f0f0; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
         
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div id="setupArea">
+
+    <div class="main-container" id="setupArea">
         <p class="welcome-text">Welcome to the fit20 recovery program</p>
-        <div class="name" id="userName">Gereed...</div>
-        <div class="message" id="personalMsg">Wachten op activatie door trainer...</div>
-        <button id="startActionBtn" class="hidden">START</button>
+        <div class="name" id="userName">Systeem Gereed</div>
+        <div class="message" id="personalMsg">Wachten op activatie door je trainer...</div>
+        <button id="startActionBtn" class="hidden">START NU</button>
     </div>
 
-    <div id="timerArea" class="hidden">
+    <div class="main-container hidden" id="timerArea">
+        <p class="welcome-text">Recovery in progress</p>
         <div id="timer">10:00</div>
     </div>
 
@@ -105,10 +122,9 @@
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         
         let isSessionActive = false;
-        let currentClient = "";
 
         async function checkInbox() {
-            if (isSessionActive) return; // Stop met checken als er al iemand zit
+            if (isSessionActive) return;
 
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
@@ -119,14 +135,12 @@
                 
                 if (data.record.user && data.record.program === 'recovery') {
                     prepareSession(data.record.user);
-                    // Wis de bin direct zodat andere tablets niet ook afgaan
                     await resetBin();
                 }
-            } catch (e) { console.log("Verbinding check..."); }
+            } catch (e) { console.log("Check..."); }
         }
 
         function prepareSession(name) {
-            currentClient = name;
             document.getElementById('userName').innerText = "Hallo " + name;
             document.getElementById('personalMsg').innerText = "Je hebt hard getraind vandaag. Goed gedaan! Ga rustig zitten en klik op 'Start'.";
             document.getElementById('startActionBtn').classList.remove('hidden');
@@ -153,7 +167,7 @@
                 if (time-- <= 0) { 
                     clearInterval(interval); 
                     timerEl.innerText = "Klaar"; 
-                    setTimeout(() => location.reload(), 5000); // Reset de app na 5 sec
+                    setTimeout(() => location.reload(), 10000);
                 }
             }, 1000);
         }
