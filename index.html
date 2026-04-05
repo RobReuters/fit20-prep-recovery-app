@@ -8,94 +8,34 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-touch-fullscreen" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="fit20-icon.png">
     <meta name="theme-color" content="#8BC63F">
-    
     <title>fit20 Recovery</title>
     
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body { 
-            background: #FFF; 
-            color: var(--antraciet); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            height: 100vh; 
-            width: 100vw; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-
+        body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 15vw; text-align: center; }
         .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
-
         .logo { position: absolute; bottom: 30px; right: 30px; width: 30vw; max-width: 300px; z-index: 100; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
-
         .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 850px; min-height: 4.5em; }
-
-        .visual-circle { 
-            width: 240px; 
-            height: 240px; 
-            flex-shrink: 0; 
-            border-radius: 50%; 
-            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            margin: 2vh 0; 
-            position: relative; 
-            transition: transform 4s ease-in-out; 
-        }
-
-        .visual-circle::after { 
-            content: ""; 
-            width: 220px; 
-            height: 220px; 
-            background: white; 
-            border-radius: 50%; 
-            position: absolute; 
-            z-index: 1; 
-        }
-
-        #circleContent { 
-            z-index: 10; 
-            font-size: 6vw; 
-            font-weight: 800; 
-            color: var(--fit20-green); 
-            position: relative; 
-        }
-
-        #startActionBtn { 
-            padding: 5vh 10vw; 
-            background: var(--fit20-green); 
-            color: white; 
-            border: none; 
-            border-radius: 20px; 
-            font-size: 5vw; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: 0 15px 30px rgba(139,198,63,0.4); 
-        }
-
+        .visual-circle { width: 240px; height: 240px; flex-shrink: 0; border-radius: 50%; background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); display: flex; justify-content: center; align-items: center; margin: 2vh 0; position: relative; transition: transform 4s ease-in-out; }
+        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
+        #circleContent { z-index: 10; font-size: 6vw; font-weight: 800; color: var(--fit20-green); position: relative; }
+        #startActionBtn { padding: 5vh 10vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5vw; font-weight: bold; cursor: pointer; box-shadow: 0 15px 30px rgba(139,198,63,0.4); }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="top-section">
-        <div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div>
-    </div>
+    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 7vw; margin-bottom: 2vh;">Laden...</h1>
@@ -105,9 +45,7 @@
 
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
-        <div class="visual-circle" id="circlePie">
-            <div id="circleContent"></div>
-        </div>
+        <div class="visual-circle" id="circlePie"><div id="circleContent"></div></div>
         <p class="sub-text" id="mainSubText">...</p>
     </div>
 
@@ -126,27 +64,19 @@
         async function loadReservoir() {
             const msg = document.getElementById('personalMsg');
             try {
-                let res = await fetch(SHEET_CSV_URL + '&cache=' + Date.now());
-                if (!res.ok) throw new Error("Fetch failed");
+                let res = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
+                if (!res.ok) throw new Error();
                 let csvText = await res.text();
-
                 const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
                 reservoir = lines.slice(1).map(line => {
                     const c = line.includes(';') ? line.split(';') : line.split(',');
                     if (c.length < 4) return null;
-                    return { 
-                        cat: c[0]?.trim().toLowerCase(), 
-                        gender: c[1]?.trim().toLowerCase(), 
-                        profile: c[2]?.trim().toLowerCase(), 
-                        title: c[3]?.trim(), 
-                        text: c[4]?.trim() 
-                    };
+                    return { cat: c[0]?.trim().toLowerCase(), gender: c[1]?.trim().toLowerCase(), profile: c[2]?.trim().toLowerCase(), title: c[3]?.trim(), text: c[4]?.trim() };
                 }).filter(i => i !== null);
-
                 document.getElementById('userName').innerText = "Systeem Gereed";
                 msg.innerText = "Wachten op activatie door trainer...";
             } catch (e) {
-                msg.innerHTML = "<span style='color:red'><b>Verbindingsfout:</b> Kan data niet laden.</span>";
+                msg.innerHTML = "<span style='color:red'>Verbindingsfout. Controleer de Sheet-link.</span>";
             }
         }
         loadReservoir();
@@ -168,7 +98,14 @@
         }
 
         function pickText(category) {
-            const matches = reservoir.filter(t => t.cat === category && (t.gender === "both" || sessionData.genders.some(g => t.gender.includes(g.toLowerCase()))) && (t.profile === "all" || sessionData.profiles.some(p => t.profile.includes(p.toLowerCase()))));
+            const userGender = sessionData.genders[0];
+            const userProfiles = sessionData.profiles;
+            const matches = reservoir.filter(t => {
+                const isCat = (t.cat === category);
+                const isGender = (t.gender === "both" || userGender === "both" || t.gender === userGender);
+                const isProfile = (t.profile === "all" || userProfiles.includes(t.profile));
+                return isCat && isGender && isProfile;
+            });
             return matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t.cat === category);
         }
 
@@ -177,30 +114,23 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
-            
             const timerInt = setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((600 - overallSeconds) / 600) * 100}%`;
                 if (overallSeconds-- <= 0) { clearInterval(timerInt); location.reload(); }
             }, 1000);
-            
             runFlow();
         });
 
         function runFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
             let start = Date.now();
-            let duration = 180 * 1000;
-
             const flowInt = setInterval(() => {
-                let now = Date.now();
-                let elapsed = now - start;
-                
+                let elapsed = Date.now() - start;
                 let msInSegment = elapsed % 30000;
                 let degrees = (msInSegment / 30000) * 360;
                 pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
-                
                 let idx = Math.floor(elapsed / 30000);
                 if (idx < 6 && selectedTexts[idx]) {
                     if (title.innerText !== selectedTexts[idx].title) {
@@ -208,24 +138,14 @@
                         sub.innerText = selectedTexts[idx].text;
                     }
                 }
-
-                if (elapsed >= duration) {
-                    clearInterval(flowInt);
-                    // FORCEER LEEGMAKEN SUBTITLE VOOR TRANSITIE
-                    sub.innerText = "";
-                    runBreathing();
-                }
+                if (elapsed >= 180000) { clearInterval(flowInt); sub.innerText = ""; runBreathing(); }
             }, 50);
         }
 
         function runBreathing() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
-            pie.style.background = "var(--light-gray)";
-            
-            let totalTime = 180;
-            let step = 1; // START BIJ 1
-            let phase = 0;
-            
+            pie.style.background = "var(--light-gray)"; pie.style.transform = "scale(1.0)";
+            let totalTime = 180, step = 1, phase = 0;
             const bInt = setInterval(() => {
                 if (totalTime > 150) { 
                     title.innerText = "Breng je adem tot rust"; 
@@ -233,30 +153,14 @@
                     content.innerText = totalTime - 150; 
                 } else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                    title.innerText = p[phase]; 
-                    sub.innerText = "Focus op je ademhaling..."; 
-                    content.innerText = step;
-                    
+                    title.innerText = p[phase]; sub.innerText = "Focus op je ademhaling..."; content.innerText = step;
                     if (phase === 0) pie.style.transform = "scale(1.25)";
                     if (phase === 2) pie.style.transform = "scale(1.0)";
-                    
-                    // TELLER LOOPT OP: 1, 2, 3, 4
-                    if (step++ >= 4) { 
-                        step = 1; 
-                        phase = (phase + 1) % 4; 
-                    }
+                    if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
                 }
-                
-                if (totalTime-- <= 0) { 
-                    clearInterval(bInt); 
-                    title.innerText = "Optimaal Hersteld"; 
-                    sub.innerText = ""; // VERWIJDER ONDERTITELING BIJ EIND
-                    content.innerText = "✓"; 
-                    setTimeout(() => location.reload(), 15000); 
-                }
+                if (totalTime-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; sub.innerText = ""; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
             }, 1000);
         }
-
         setInterval(checkInbox, 3000);
     </script>
 </body>
