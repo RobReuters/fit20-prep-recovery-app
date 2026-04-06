@@ -3,58 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App - Recovery Control</title>
+    <title>fit20 Trainer App</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
-        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; color: var(--antraciet); }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-        h2 { color: var(--fit20-green); margin-top: 0; }
+        body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 800px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--fit20-green); text-align: center; margin-bottom: 20px; }
         
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; }
-        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .col { background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         
-        .options-group { display: grid; grid-template-columns: 1fr; gap: 10px; background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-        .option { display: flex; align-items: center; cursor: pointer; font-size: 16px; }
-        .option input { margin-right: 12px; width: 20px; height: 20px; accent-color: var(--fit20-green); }
+        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; margin-bottom: 15px; }
+        
+        .option { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 14px; }
+        .option input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--fit20-green); }
 
-        #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 18px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #sendBtn:active { transform: scale(0.98); }
-        #status { margin-top: 15px; text-align: center; font-weight: bold; }
-        .info { font-size: 12px; color: #888; margin-top: 5px; }
+        #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        #status { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Recovery Starten</h2>
+<div class="container">
+    <h2>Recovery Afstandsbediening</h2>
     
-    <div class="form-group">
-        <label for="fname">Voornaam lid:</label>
-        <input type="text" id="fname" placeholder="Vul voornaam in...">
-    </div>
+    <div class="grid">
+        <div class="col">
+            <label>1. Voornaam lid:</label>
+            <input type="text" id="fname" placeholder="Naam...">
 
-    <div class="form-group">
-        <label>Geslacht:</label>
-        <div class="options-group">
+            <label>2. Geslacht:</label>
             <label class="option"><input type="radio" name="gender" value="v" checked> Vrouw</label>
             <label class="option"><input type="radio" name="gender" value="m"> Man</label>
             <label class="option"><input type="radio" name="gender" value="both"> Neutraal</label>
+            
+            <label style="margin-top:15px;">3. Hoofddoelen (max 2):</label>
+            <div id="profileGroup">
+                <label class="option"><input type="checkbox" value="kracht" checked> Kracht & Conditie</label>
+                <label class="option"><input type="checkbox" value="welzijn"> Lichaamsvorm & Welzijn</label>
+                <label class="option"><input type="checkbox" value="pijn"> Pijn- & Klachtreductie</label>
+                <label class="option"><input type="checkbox" value="mobiliteit"> Mobiliteit</label>
+            </div>
+        </div>
+
+        <div class="col">
+            <label>4. Programma Onderdelen:</label>
+            <div id="stepGroup">
+                <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery (3m)</label>
+                <label class="option"><input type="checkbox" value="results" checked> Resultaten (1m)</label>
+                <label class="option"><input type="checkbox" value="science" checked> Wetenschap (2m)</label>
+                <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling (4m)</label>
+                <label class="option"><input type="checkbox" value="end" checked> Eindboodschap (1m)</label>
+            </div>
+            <p style="font-size: 11px; color: #888; margin-top: 10px;">Vink uit voor een verkort programma.</p>
         </div>
     </div>
 
-    <div class="form-group">
-        <label>Hoofddoelen (max. 2):</label>
-        <div class="options-group" id="profileGroup">
-            <label class="option"><input type="checkbox" value="kracht" checked> A) Fysieke Kracht & Conditie</label>
-            <label class="option"><input type="checkbox" value="welzijn"> B) Lichaamsvorm & Welzijn</label>
-            <label class="option"><input type="checkbox" value="pijn"> C) Pijn- & Klachtenreductie</label>
-            <label class="option"><input type="checkbox" value="mobiliteit"> D) Functionele Mobiliteit</label>
-        </div>
-        <p class="info" id="limitMsg">Kies maximaal 2 opties.</p>
-    </div>
-
-    <button id="sendBtn">VERSTUUR NAAR TABLET</button>
+    <button id="sendBtn">START SESSIE</button>
     <div id="status"></div>
 </div>
 
@@ -62,73 +68,34 @@
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
 
-    // LIMIET LOGICA VOOR CHECKBOXES
-    const checkboxes = document.querySelectorAll('#profileGroup input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', () => {
-            const checkedCount = document.querySelectorAll('#profileGroup input[type="checkbox"]:checked').length;
-            if (checkedCount > 2) {
-                cb.checked = false; // Maak de laatste vink ongedaan
-                alert("Je mag maximaal 2 doelen kiezen.");
-            }
-        });
-    });
+    // Max 2 doelen
+    const profCB = document.querySelectorAll('#profileGroup input');
+    profCB.forEach(cb => cb.addEventListener('change', () => {
+        if(document.querySelectorAll('#profileGroup input:checked').length > 2) cb.checked = false;
+    }));
 
     document.getElementById('sendBtn').addEventListener('click', async () => {
         const name = document.getElementById('fname').value.trim();
-        const statusDiv = document.getElementById('status');
-        
-        if (!name) {
-            alert("Vul a.u.b. een naam in.");
-            return;
-        }
+        if(!name) { alert("Naam verplicht"); return; }
 
-        // Pak geselecteerde radio (Geslacht)
         const gender = document.querySelector('input[name="gender"]:checked').value;
+        const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
+        const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
 
-        // Pak geselecteerde checkboxes (Profielen)
-        const profiles = Array.from(document.querySelectorAll('#profileGroup input[type="checkbox"]:checked'))
-                              .map(cb => cb.value);
+        if(steps.length === 0) { alert("Kies minimaal 1 onderdeel"); return; }
 
-        if (profiles.length === 0) {
-            alert("Kies minimaal 1 doel.");
-            return;
-        }
-
-        statusDiv.innerText = "Bezig met versturen...";
-        statusDiv.style.color = "orange";
-
-        const payload = {
-            user: name,
-            program: "recovery",
-            genders: [gender],
-            profiles: profiles
-        };
+        document.getElementById('status').innerText = "Versturen...";
 
         try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                body: JSON.stringify({ user: name, program: "recovery", genders: [gender], profiles: profiles, steps: steps })
             });
-
-            if (res.ok) {
-                statusDiv.innerText = "Succes! Tablet is geactiveerd.";
-                statusDiv.style.color = "green";
-                // Reset naam voor volgende klant
-                document.getElementById('fname').value = "";
-            } else {
-                throw new Error("Versturen mislukt.");
-            }
-        } catch (e) {
-            statusDiv.innerText = "Fout: " + e.message;
-            statusDiv.style.color = "red";
-        }
+            document.getElementById('status').innerText = "Gelukt! Tablet start nu.";
+            document.getElementById('status').style.color = "green";
+        } catch (e) { document.getElementById('status').innerText = "Fout!"; }
     });
 </script>
-
 </body>
 </html>
