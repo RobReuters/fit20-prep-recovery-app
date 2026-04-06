@@ -16,21 +16,173 @@
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
-        .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
-        .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 15vw; text-align: center; }
-        .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+        
+        body { 
+            background: #FFF; 
+            color: var(--antraciet); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            height: 100vh; 
+            width: 100vw; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        /* Top & Bottom Secties (blijven gelijk) */
+        .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; z-index: 10; }
+        .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; z-index: 10; }
         .logo { position: absolute; bottom: 30px; right: 30px; width: 30vw; max-width: 300px; z-index: 100; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
-        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
-        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 850px; min-height: 4.5em; }
-        .visual-circle { width: 240px; height: 240px; flex-shrink: 0; border-radius: 50%; background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); display: flex; justify-content: center; align-items: center; margin: 2vh 0; position: relative; transition: transform 4s ease-in-out; }
-        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
-        #circleContent { z-index: 10; font-size: 6vw; font-weight: 800; color: var(--fit20-green); position: relative; }
-        #startActionBtn { padding: 5vh 10vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5vw; font-weight: bold; cursor: pointer; box-shadow: 0 15px 30px rgba(139,198,63,0.4); }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
+
+        /* Middle Sectie - Flexibel gemaakt */
+        .middle-section { 
+            height: 65vh; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 0 5vw; /* Minder padding aan de zijkant */
+            text-align: center; 
+            position: relative;
+        }
+
+        /* Algemene Tekst elementen (blijven centraal bovenin) */
+        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
+        .sub-text { font-size: 2vw; color: #666; line-height: 1.4; max-width: 800px; min-height: 4em; }
+
+        /* NIEUW: Container voor de twee Action Areas om transities te regelen */
+        #actionAreaWrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* NIEUW: De centrale Actie Area voor de 6 teksten (cats a-f) */
+        #readingArea {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+            /* Verberg standaard */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* NIEUW: De Twee-Kolom Actie Area voor de Box Breathing */
+        #breathingArea {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            /* Verberg standaard */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1; /* Zorg dat het achter de reading area ligt */
+        }
+
+        /* Container voor de twee ademhalingskolommen */
+        .breathing-content-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1300px; /* Max breedte verhoogd voor een breder plaatje */
+            justify-content: center; /* Verdeel ruimte, plaatje naar links, cirkel naar rechts */
+            align-items: center;
+            margin-top: 3vh;
+            gap: 4vw;
+        }
+
+        /* Linkerkolom voor het plaatje */
+        .breathing-image-col {
+            flex: 1 1 50%; /* Flexibel, neemt minimaal 50% breedte in */
+            display: flex;
+            justify-content: flex-end; /* Pomp plaatje naar rechts in deze kolom */
+            align-items: center;
+        }
+        
+        /* Het Plaatje zelf - Robuust schalen voor elke verhouding/grootte */
+        .breathing-image-col img {
+            max-width: 50vw; /* Max breedte is 50% van schermbreedte */
+            max-height: 50vh; /* Max hoogte is 50% van schermhoogte, om klappen te voorkomen */
+            height: auto;
+            border-radius: 15px; /* fit20 stijl hoeken */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            object-fit: contain; /* Behoud verhouding en scale tot het past, zonder vervorming */
+        }
+
+        /* Rechterkolom voor de cirkel */
+        .breathing-circle-col {
+            flex: 0 0 300px; /* Vaste breedte voor de cirkel-kolom */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* De Cirkel zelf (blijft qua werking gelijk, maar staat nu rechts) */
+        .visual-circle { 
+            width: 25vw; /* Iets groter op basis van viewport width */
+            height: 25vw; 
+            max-width: 300px; 
+            max-height: 300px;
+            flex-shrink: 0; 
+            border-radius: 50%; 
+            background: conic-gradient(var(--fit20-green) 0deg, var(--light-gray) 0deg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            position: relative; 
+            transition: transform 1s linear; /* Snel genoeg voor ademhaling */
+        }
+
+        .visual-circle::after { 
+            content: ""; 
+            width: 23vw; 
+            height: 23vw; 
+            max-width: 280px; 
+            max-height: 280px;
+            background: white; 
+            border-radius: 50%; 
+            position: absolute; 
+            z-index: 1; 
+        }
+
+        #circleContent { 
+            z-index: 10; 
+            font-size: 6vw; 
+            font-weight: 800; 
+            color: var(--fit20-green); 
+            position: relative; 
+        }
+
+        #readingArea .visual-circle { 
+            width: 220px;
+            height: 220px;
+            margin: 2vh 0;
+        }
+        #readingArea .visual-circle::after { 
+            width: 200px;
+            height: 200px;
+        }
+
+        #startActionBtn { padding: 5vh 10vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 5vw; font-weight: bold; cursor: pointer; box-shadow: 0 15px 30px rgba(139,198,63,0.4); }
         .hidden { display: none !important; }
+        
     </style>
 </head>
 <body>
@@ -44,10 +196,34 @@
     </div>
 
     <div class="middle-section hidden" id="actionArea">
-        <div class="instruction-title" id="mainTitle">...</div>
-        <div class="visual-circle" id="circlePie"><div id="circleContent"></div></div>
-        <p class="sub-text" id="mainSubText">...</p>
-    </div>
+        
+        <div id="actionAreaWrapper">
+            
+            <div id="readingArea">
+                <div class="instruction-title" id="readingMainTitle">...</div>
+                <p class="sub-text" id="readingMainSubText">...</p>
+                <div class="visual-circle centered-circle" id="readingCirclePie">
+                    <div id="readingCircleContent"></div>
+                </div>
+            </div>
+
+            <div id="breathingArea" class="hidden">
+                <div class="instruction-title" id="breathingMainTitle">...</div>
+                <p class="sub-text" id="breathingMainSubText">...</p>
+                
+                <div class="breathing-content-wrapper">
+                    <div class="breathing-image-col">
+                        <img src="box-breathe-instructie.png" alt="Box Breathing Instructie">
+                    </div>
+                    <div class="breathing-circle-col">
+                        <div class="visual-circle breathing-circle" id="breathingCirclePie">
+                            <div id="breathingCircleContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> </div>
 
     <div class="bottom-section">
         <img src="fit20-logo.png" class="logo">
@@ -60,6 +236,8 @@
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
 
         let reservoir = [], sessionData = {}, selectedTexts = [], isSessionActive = false, overallSeconds = 600;
+
+        // ... loadReservoir() & checkInbox() blijven gelijk ...
 
         async function loadReservoir() {
             const msg = document.getElementById('personalMsg');
@@ -114,6 +292,11 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
+            
+            // Toon de reading area
+            document.getElementById('readingArea').classList.remove('hidden');
+            document.getElementById('breathingArea').classList.add('hidden');
+            
             const timerInt = setInterval(() => {
                 let m = Math.floor(overallSeconds / 60), s = overallSeconds % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -124,43 +307,85 @@
         });
 
         function runFlow() {
-            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie');
+            const readingArea = document.getElementById('readingArea'), readingTitle = document.getElementById('readingMainTitle'), readingSub = document.getElementById('readingMainSubText'), readingPie = document.getElementById('readingCirclePie');
+            const breathingArea = document.getElementById('breathingArea');
             let start = Date.now();
+            
             const flowInt = setInterval(() => {
                 let elapsed = Date.now() - start;
-                let msInSegment = elapsed % 30000;
-                let degrees = (msInSegment / 30000) * 360;
-                pie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
-                let idx = Math.floor(elapsed / 30000);
-                if (idx < 6 && selectedTexts[idx]) {
-                    if (title.innerText !== selectedTexts[idx].title) {
-                        title.innerText = selectedTexts[idx].title;
-                        sub.innerText = selectedTexts[idx].text;
+                
+                // FASE 1: 0-3 min (Deep Recovery a-f) - Cirkel in het midden
+                if (elapsed < 180000) {
+                    let msInSegment = elapsed % 30000;
+                    let degrees = (msInSegment / 30000) * 360;
+                    // Laat de cirkel centraal staan en draaien
+                    readingPie.style.background = `conic-gradient(var(--fit20-green) ${degrees}deg, var(--light-gray) ${degrees}deg)`;
+                    
+                    let idx = Math.floor(elapsed / 30000);
+                    if (selectedTexts[idx]) {
+                        readingTitle.innerText = selectedTexts[idx].title;
+                        readingSub.innerText = selectedTexts[idx].text;
                     }
+                } 
+                // TRANSITIE NAAR ADEMHALING (vanaf 3 min)
+                else {
+                    clearInterval(flowInt);
+                    
+                    // Fade out reading, Fade in breathing
+                    readingArea.style.opacity = 0;
+                    setTimeout(() => readingArea.classList.add('hidden'), 1000);
+                    
+                    setTimeout(() => {
+                        breathingArea.classList.remove('hidden');
+                        setTimeout(() => breathingArea.style.opacity = 1, 50);
+                    }, 1050);
+                    
+                    // Start de Box Breathing op de nieuwe layout
+                    runBreathing();
                 }
-                if (elapsed >= 180000) { clearInterval(flowInt); sub.innerText = ""; runBreathing(); }
             }, 50);
         }
 
         function runBreathing() {
-            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('circlePie'), content = document.getElementById('circleContent');
-            pie.style.background = "var(--light-gray)"; pie.style.transform = "scale(1.0)";
-            let totalTime = 180, step = 1, phase = 0;
+            const breathingTitle = document.getElementById('breathingMainTitle'), breathingSub = document.getElementById('breathingMainSubText'), breathingPie = document.getElementById('breathingCirclePie'), breathingContent = document.getElementById('breathingCircleContent');
+            breathingPie.style.background = "var(--light-gray)";
+            
+            let totalTime = 240, step = 1, phase = 0; // Totaal naar 4 min (240s prep+adem)
+            
+            // Reset de ademhalings-cirkel
+            breathingPie.style.transform = 'translate(0, 0) scale(1.0)';
+            
             const bInt = setInterval(() => {
                 if (totalTime > 150) { 
-                    title.innerText = "Breng je adem tot rust"; 
-                    sub.innerText = "Bereid je voor op de Box Breathing oefening. Adem rustig in en uit door je neus."; 
-                    content.innerText = totalTime - 150; 
+                    breathingTitle.innerText = "Breng je adem tot rust"; 
+                    breathingSub.innerText = "Bereid je voor op de Box Breathing oefening. Adem rustig in en uit door je neus. Volg het ritme dadelijk."; 
+                    breathingContent.innerText = totalTime - 150; 
                 } else {
                     const p = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
-                    title.innerText = p[phase]; sub.innerText = "Focus op je ademhaling..."; content.innerText = step;
-                    if (phase === 0) pie.style.transform = "scale(1.25)";
-                    if (phase === 2) pie.style.transform = "scale(1.0)";
-                    if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
+                    breathingTitle.innerText = p[phase]; 
+                    breathingSub.innerText = "Volg de cijfers in de cirkel..."; 
+                    breathingContent.innerText = step;
+                    
+                    // Ademhaling schaalveranderingen
+                    if (phase === 0) breathingPie.style.transform = "scale(1.2)";
+                    if (phase === 2) breathingPie.style.transform = "scale(1.0)";
+                    
+                    if (step++ >= 4) { 
+                        step = 1; 
+                        phase = (phase + 1) % 4; 
+                    }
                 }
-                if (totalTime-- <= 0) { clearInterval(bInt); title.innerText = "Optimaal Hersteld"; sub.innerText = ""; content.innerText = "✓"; setTimeout(() => location.reload(), 15000); }
+                
+                if (totalTime-- <= 0) { 
+                    clearInterval(bInt); 
+                    breathingTitle.innerText = "Optimaal Hersteld"; 
+                    breathingSub.innerText = "";
+                    breathingContent.innerText = "✓"; 
+                    setTimeout(() => location.reload(), 15000); 
+                }
             }, 1000);
         }
+
         setInterval(checkInbox, 3000);
     </script>
 </body>
