@@ -7,38 +7,44 @@
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
         body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); }
-        .container { background: white; padding: 20px; border-radius: 15px; max-width: 800px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 850px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { color: var(--fit20-green); text-align: center; margin-bottom: 20px; }
-        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .col { background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-        
-        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; margin-bottom: 15px; }
-        
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; margin-bottom: 12px; }
         .option { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 14px; }
         .option input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--fit20-green); }
-
+        .age-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         #status { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>Recovery Afstandsbediening</h2>
-    
     <div class="grid">
         <div class="col">
             <label>1. Voornaam lid:</label>
             <input type="text" id="fname" placeholder="Naam...">
+
+            <div class="age-inputs">
+                <div>
+                    <label>Kalenderleeftijd:</label>
+                    <input type="number" id="calAge" placeholder="bijv. 60">
+                </div>
+                <div>
+                    <label>fit20 Age:</label>
+                    <input type="number" id="fitAge" placeholder="bijv. 45">
+                </div>
+            </div>
 
             <label>2. Geslacht:</label>
             <label class="option"><input type="radio" name="gender" value="v" checked> Vrouw</label>
             <label class="option"><input type="radio" name="gender" value="m"> Man</label>
             <label class="option"><input type="radio" name="gender" value="both"> Neutraal</label>
             
-            <label style="margin-top:15px;">3. Hoofddoelen (max 2):</label>
+            <label style="margin-top:10px;">3. Hoofddoelen (max 2):</label>
             <div id="profileGroup">
                 <label class="option"><input type="checkbox" value="kracht" checked> Kracht & Conditie</label>
                 <label class="option"><input type="checkbox" value="welzijn"> Lichaamsvorm & Welzijn</label>
@@ -46,53 +52,43 @@
                 <label class="option"><input type="checkbox" value="mobiliteit"> Mobiliteit</label>
             </div>
         </div>
-
         <div class="col">
             <label>4. Programma Onderdelen:</label>
             <div id="stepGroup">
                 <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery (3m)</label>
-                <label class="option"><input type="checkbox" value="results" checked> Resultaten (1m)</label>
+                <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten (1m)</label>
                 <label class="option"><input type="checkbox" value="science" checked> Wetenschap (2m)</label>
                 <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling (4m)</label>
                 <label class="option"><input type="checkbox" value="end" checked> Eindboodschap (1m)</label>
             </div>
-            <p style="font-size: 11px; color: #888; margin-top: 10px;">Vink uit voor een verkort programma.</p>
         </div>
     </div>
-
     <button id="sendBtn">START SESSIE</button>
     <div id="status"></div>
 </div>
-
 <script>
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
-
-    // Max 2 doelen
     const profCB = document.querySelectorAll('#profileGroup input');
     profCB.forEach(cb => cb.addEventListener('change', () => {
         if(document.querySelectorAll('#profileGroup input:checked').length > 2) cb.checked = false;
     }));
-
     document.getElementById('sendBtn').addEventListener('click', async () => {
         const name = document.getElementById('fname').value.trim();
-        if(!name) { alert("Naam verplicht"); return; }
-
+        const calAge = document.getElementById('calAge').value;
+        const fitAge = document.getElementById('fitAge').value;
+        if(!name || !calAge || !fitAge) { alert("Vul alle velden in"); return; }
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
         const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
-
-        if(steps.length === 0) { alert("Kies minimaal 1 onderdeel"); return; }
-
         document.getElementById('status').innerText = "Versturen...";
-
         try {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify({ user: name, program: "recovery", genders: [gender], profiles: profiles, steps: steps })
+                body: JSON.stringify({ user: name, calAge: calAge, fitAge: fitAge, program: "recovery", genders: [gender], profiles: profiles, steps: steps })
             });
-            document.getElementById('status').innerText = "Gelukt! Tablet start nu.";
+            document.getElementById('status').innerText = "Gelukt!";
             document.getElementById('status').style.color = "green";
         } catch (e) { document.getElementById('status').innerText = "Fout!"; }
     });
