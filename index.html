@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v1.2</title>
-    
+    <title>fit20 Recovery v1.3</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* Versie Tag */
-        .version-tag { position: absolute; top: 10px; right: 10px; font-size: 10px; color: #ccc; z-index: 1000; }
+        .version-tag { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #eee; z-index: 1000; }
 
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5vw; text-align: center; }
@@ -23,36 +20,27 @@
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
-        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; color: var(--antraciet); }
-        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 900px; min-height: 3em; margin-bottom: 2vh; }
+        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
+        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 900px; min-height: 3em; }
 
-        /* DASHBOARD RESULTATEN v1.2 */
+        /* RESULTS v1.3 */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* De Badge (Verborgen bij start) */
         .age-badge { 
-            background: var(--fit20-green); color: white; padding: 25px 60px; border-radius: 100px; 
-            font-size: 5vw; font-weight: 800; margin-bottom: 40px; 
-            box-shadow: 0 15px 35px rgba(139,198,63,0.4);
-            opacity: 0; transform: translateY(20px); transition: all 1s ease-out;
+            background: var(--fit20-green); color: white; padding: 20px 50px; border-radius: 100px; 
+            font-size: 4vw; font-weight: 800; margin-bottom: 30px; 
+            opacity: 0; transform: scale(0.8); transition: all 1s ease-out;
         }
-        .age-badge.show { opacity: 1; transform: translateY(0); }
+        .age-badge.show { opacity: 1; transform: scale(1); }
 
-        /* De prominente fit20 Age box */
-        #fitAgeHighlight {
-            font-size: 6vw; font-weight: 900; color: var(--fit20-green);
-            opacity: 0; transition: opacity 1.5s ease-in;
-        }
-        #fitAgeHighlight.show { opacity: 1; }
+        .meter-container { width: 100%; height: 65px; background: #eee; border-radius: 35px; position: relative; margin: 60px 0; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 35px; position: absolute; right: 0; width: 0%; transition: width 10s linear; }
         
-        .meter-container { width: 100%; height: 60px; background: #eee; border-radius: 30px; position: relative; margin: 50px 0; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 30px; position: absolute; right: 0; width: 0%; transition: width 5s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        .age-label { position: absolute; top: -45px; font-weight: bold; font-size: 2vw; }
-        .label-left { left: 0; color: var(--fit20-green); }
-        .label-right { right: 0; color: #bbb; }
+        .age-display { position: absolute; top: -70px; display: flex; flex-direction: column; align-items: center; }
+        #dynamicAge { font-size: 5vw; font-weight: 900; color: var(--fit20-green); transition: color 0.5s; }
+        .label-left { left: 0; transform: translateX(-20%); }
+        .label-right { right: 0; font-size: 1.8vw; color: #bbb; top: -45px; }
 
-        /* Overige */
+        /* Breathing & Circles */
         .visual-circle { width: 280px; height: 280px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 230px; height: 230px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 90px; font-weight: 800; color: var(--fit20-green); position: relative; }
@@ -62,42 +50,36 @@
         .instruction-image { max-width: 95%; max-height: 50vh; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         #prepCountdown { font-size: 18vw; font-weight: 800; color: var(--fit20-green); }
         #startActionBtn { padding: 4vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 4vw; font-weight: bold; cursor: pointer; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
-    <div class="version-tag">v1.2</div>
-
-    <div class="top-section">
-        <div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div>
-    </div>
+    <div class="version-tag">v1.3</div>
+    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
-        <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
+        <h1 id="userName" style="font-size: 6vw;">fit20 Recovery</h1>
         <p class="sub-text" id="personalMsg">Wachten op activatie...</p>
-        <button id="startActionBtn" class="hidden">START RECOVERY</button>
+        <button id="startActionBtn" class="hidden">START</button>
     </div>
 
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
         <p class="sub-text" id="mainSubText">...</p>
         
-        <div class="visual-circle" id="flowCircle">
-            <div class="circle-number" id="flowCircleContent"></div>
-        </div>
+        <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
 
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge">- 0 JAAR</div>
-            <div id="fitAgeHighlight">fit20 Age: <span id="valFitBig">0</span></div>
             <div class="meter-container">
-                <div class="age-label label-left">Jouw Doel</div>
-                <div class="age-label label-right">Kalenderleeftijd: <span id="valCal">0</span></div>
+                <div class="age-display label-left">
+                    <span style="font-size: 1.2vw; color: #999; font-weight: bold;">fit20 AGE</span>
+                    <span id="dynamicAge">0</span>
+                </div>
+                <div class="age-label label-right">Kalender: <span id="valCal">0</span></div>
                 <div class="meter-fill" id="meterFill"></div>
             </div>
         </div>
-
         <div id="prepCountdown" class="hidden">30</div>
     </div>
 
@@ -111,10 +93,7 @@
         </div>
     </div>
 
-    <div class="bottom-section">
-        <img src="fit20-logo.png" class="logo">
-        <div class="progress"><div id="bar"></div></div>
-    </div>
+    <div class="bottom-section"><img src="fit20-logo.png" class="logo"><div class="progress"><div id="bar"></div></div></div>
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
@@ -170,11 +149,11 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
-            const timerInt = setInterval(() => {
+            const tInt = setInterval(() => {
                 let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((totalSeconds - currentTimer) / totalSeconds) * 100}%`;
-                if (currentTimer-- <= 0) { clearInterval(timerInt); location.reload(); }
+                if (currentTimer-- <= 0) { clearInterval(tInt); location.reload(); }
             }, 1000);
             runMasterFlow();
         });
@@ -186,64 +165,54 @@
             
             const masterInt = setInterval(() => {
                 let elapsed = Date.now() - start;
-                let activeSteps = sessionData.steps;
+                let steps = sessionData.steps;
                 let currentTime = 0;
 
-                if (activeSteps.includes('recovery')) {
+                if (steps.includes('recovery')) {
                     if (elapsed < (currentTime + 180) * 1000) {
                         pie.classList.remove('hidden'); results.classList.add('hidden');
-                        let localMs = elapsed - (currentTime * 1000);
-                        let idx = Math.floor(localMs / 30000);
-                        updateCircleUI(selectedTexts[["a","b","c","d","e","f"][idx]], localMs % 30000);
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["a","b","c","d","e","f"][Math.floor(ms / 30000)]], ms % 30000);
                         return;
                     }
                     currentTime += 180;
                 }
 
-                if (activeSteps.includes('results')) {
+                if (steps.includes('results')) {
                     if (elapsed < (currentTime + 60) * 1000) {
                         title.innerText = "Jouw Biologische Verjonging";
-                        sub.innerText = `fit20 draait de tijd voor je terug. Door je training presteer je vandaag op een veel jonger niveau.`;
-                        pie.classList.add('hidden');
-                        results.classList.remove('hidden');
+                        sub.innerText = "Terwijl de kalender vooruit loopt, draaien wij jouw klok terug.";
+                        pie.classList.add('hidden'); results.classList.remove('hidden');
                         
                         document.getElementById('valCal').innerText = sessionData.calAge;
-                        document.getElementById('valFitBig').innerText = sessionData.fitAge;
-                        const diff = sessionData.calAge - sessionData.fitAge;
-                        document.getElementById('ageDiffBadge').innerText = `VERJONGING: - ${diff} JAAR`;
+                        const targetFit = parseInt(sessionData.fitAge);
+                        const startCal = parseInt(sessionData.calAge);
                         
-                        const perc = Math.min((diff / 40) * 100, 100);
-                        
-                        // Start animatie na korte pauze
-                        setTimeout(() => {
-                            document.getElementById('meterFill').style.width = perc + "%";
-                            // Toon badge en fitAge pas na 5 seconden (als de balk klaar is)
+                        // Start 10s animatie
+                        if (document.getElementById('meterFill').style.width !== "100%") {
                             setTimeout(() => {
-                                document.getElementById('ageDiffBadge').classList.add('show');
-                                document.getElementById('fitAgeHighlight').classList.add('show');
-                            }, 5000);
-                        }, 500);
+                                document.getElementById('meterFill').style.width = "100%";
+                                animateAgeCount(startCal, targetFit, 10000);
+                            }, 500);
+                        }
                         return;
                     }
                     currentTime += 60;
                 }
 
-                if (activeSteps.includes('science')) {
+                if (steps.includes('science')) {
                     if (elapsed < (currentTime + 120) * 1000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden');
-                        let localMs = elapsed - (currentTime * 1000);
-                        let idx = Math.floor(localMs / 30000);
-                        updateCircleUI(selectedTexts[["g","h","i","j"][idx]], localMs % 30000);
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["g","h","i","j"][Math.floor(ms / 30000)]], ms % 30000);
                         return;
                     }
                     currentTime += 120;
                 }
 
-                if (activeSteps.includes('breathing')) {
+                if (steps.includes('breathing')) {
                     if (elapsed < (currentTime + 30) * 1000) {
-                        title.innerText = "Breng je adem tot rust";
-                        sub.innerText = "Bereid je voor op de Box Breathing.";
-                        pie.classList.add('hidden'); prep.classList.remove('hidden');
+                        title.innerText = "Breng je adem tot rust"; pie.classList.add('hidden'); prep.classList.remove('hidden');
                         prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
                         return;
                     }
@@ -252,27 +221,49 @@
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
                         document.getElementById('breathingArea').classList.remove('hidden');
-                        startBreathing();
-                        return;
+                        startBreathing(); return;
                     }
                     currentTime += 210;
                 }
 
-                if (activeSteps.includes('end')) {
+                if (steps.includes('end')) {
                     prep.classList.add('hidden'); pie.classList.remove('hidden');
                     title.innerText = `Klaar voor de week, ${sessionData.user}!`;
-                    sub.innerText = "Verlaat rustig de stoel. Geniet van je herstel.";
                     document.getElementById('flowCircleContent').innerText = "✓";
                     pie.style.background = "var(--light-gray)";
                 }
             }, 50);
+        }
 
-            function updateCircleUI(data, ms) {
-                if(!data) return;
-                title.innerText = data.title; sub.innerText = data.text;
-                let deg = (ms / 30000) * 360;
-                pie.style.background = ms < 100 ? "var(--light-gray)" : `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+        function animateAgeCount(start, end, duration) {
+            const display = document.getElementById('dynamicAge');
+            const badge = document.getElementById('ageDiffBadge');
+            let startTime = null;
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = timestamp - startTime;
+                let current = Math.round(start - (progress / duration) * (start - end));
+                if (current < end) current = end;
+                display.innerText = current;
+
+                if (progress < duration) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    display.innerText = end;
+                    badge.innerText = `VERJONGING: - ${start - end} JAAR`;
+                    badge.classList.add('show');
+                }
             }
+            window.requestAnimationFrame(step);
+        }
+
+        function updateCircleUI(data, ms) {
+            if(!data) return;
+            document.getElementById('mainTitle').innerText = data.title;
+            document.getElementById('mainSubText').innerText = data.text;
+            let deg = (ms / 30000) * 360;
+            document.getElementById('flowCircle').style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
         }
 
         function startBreathing() {
@@ -289,7 +280,6 @@
                 if (total-- <= 0) { clearInterval(bInt); location.reload(); }
             }, 1000);
         }
-
         setInterval(checkInbox, 3000);
     </script>
 </body>
