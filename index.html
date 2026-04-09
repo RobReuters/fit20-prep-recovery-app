@@ -4,49 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v1.8</title>
+    <title>fit20 Recovery v1.9</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #ddd; z-index: 1000; }
+        #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #eee; z-index: 1000; }
 
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
-        .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2vh 5vw; text-align: center; }
+        .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5vw; text-align: center; transition: opacity 2s ease-in-out; }
         .bottom-section { height: 20vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
 
-        /* LOGO FIX: Iets meer ruimte van de onderkant */
-        .logo { position: absolute; bottom: 35px; right: 35px; width: 22vw; max-width: 220px; z-index: 100; }
+        /* LOGO FIX: Fixed positie zodat hij nooit verspringt */
+        .logo { position: fixed; bottom: 4vh; right: 4vw; width: 20vw; max-width: 220px; z-index: 1000; }
         
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
-        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; }
-        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 850px; margin-bottom: 2vh; }
+        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
+        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 850px; margin-bottom: 2vh; min-height: 3em; }
 
-        /* RESULTS DASHBOARD */
-        #resultsArea { width: 100%; max-width: 850px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
+        /* RESULTS AREA */
+        #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         .age-badge { 
             background: var(--fit20-green); color: white; width: 280px; height: 280px; 
             display: flex; align-items: center; justify-content: center;
             clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
             font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 40px; text-align: center;
-            opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin: 2vh 0;
+            opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
-
+        .age-badge.show { opacity: 1; transform: scale(1); }
         .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 8vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; bottom: 0; width: 0%; transition: width 10s linear; }
-        
+        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; width: 0%; transition: width 10s linear; }
         .age-display { position: absolute; top: -75px; display: flex; flex-direction: column; align-items: center; }
-        .age-display .label { font-size: 1.2vw; color: #999; font-weight: bold; margin-bottom: 2px; }
-        .age-display .number { font-size: 5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
+        .age-display .number { font-size: 5vw; font-weight: 900; color: var(--fit20-green); }
         .label-left { left: 0; transform: translateX(-5%); }
         .label-right { right: 0; transform: translateX(5%); }
 
-        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); margin-top: 2vh; }
+        /* Circles & Breathing */
+        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
         #boxBreathingLayout { display: flex; width: 100%; height: 100%; align-items: center; }
@@ -55,12 +53,14 @@
         .instruction-image { max-width: 90%; max-height: 45vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         #prepCountdown { font-size: 15vw; font-weight: 800; color: var(--fit20-green); }
         #startActionBtn { padding: 3vh 6vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 4vw; font-weight: bold; cursor: pointer; }
+        
         .hidden { display: none !important; }
+        .soft-fade { opacity: 0.2; transition: opacity 4s ease-in-out; }
     </style>
 </head>
 <body>
-    <div id="vTag">v1.8</div>
-    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
+    <div id="vTag">v1.9</div>
+    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
@@ -75,8 +75,8 @@
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge">...</div>
             <div class="meter-container">
-                <div class="age-display label-left"><span class="label">fit20 Age</span><span id="dynamicAge" class="number">0</span></div>
-                <div class="age-display label-right"><span class="label">Kalender</span><span id="valCal" class="number">0</span></div>
+                <div class="age-display label-left"><span style="font-size:1.2vw; color:#999;">fit20 Age</span><span id="dynamicAge" class="number">0</span></div>
+                <div class="age-display label-right"><span style="font-size:1.2vw; color:#999;">Kalender</span><span id="valCal" class="number">0</span></div>
                 <div class="meter-fill" id="meterFill"></div>
             </div>
         </div>
@@ -91,7 +91,10 @@
         </div>
     </div>
 
-    <div class="bottom-section"><img src="fit20-logo.png" class="logo"><div class="progress"><div id="bar"></div></div></div>
+    <div class="bottom-section">
+        <img src="fit20-logo.png" class="logo">
+        <div class="progress"><div id="bar"></div></div>
+    </div>
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
@@ -124,13 +127,15 @@
                     document.getElementById('personalMsg').innerText = "Klaar voor je verjonging? Druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     
+                    // TIMING v1.9 (Totaal 600s)
                     let t = 0;
-                    if(sessionData.steps.includes('recovery')) t += 180;
-                    if(sessionData.steps.includes('results')) t += 60;
-                    if(sessionData.steps.includes('science')) t += 120;
-                    if(sessionData.steps.includes('breathing')) t += 240;
-                    if(sessionData.steps.includes('end')) t += 60;
+                    if(sessionData.steps.includes('recovery')) t += 180; // 3m
+                    if(sessionData.steps.includes('results')) t += 60;   // 1m
+                    if(sessionData.steps.includes('science')) t += 90;   // 1.5m (Verkort voor balans)
+                    if(sessionData.steps.includes('breathing')) t += 210; // 3.5m (30s prep + 3m box)
+                    if(sessionData.steps.includes('end')) t += 60;       // 1m
                     totalSeconds = t; currentTimer = t;
+
                     selectedTexts = ["a","b","c","d","e","f","g","h","i","j"].reduce((acc, cat) => { acc[cat] = pickText(cat); return acc; }, {});
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
                 }
@@ -167,6 +172,7 @@
                 let steps = sessionData.steps;
                 let currentTime = 0;
 
+                // 1. RECOVERY
                 if (steps.includes('recovery')) {
                     if (elapsed < (currentTime + 180) * 1000) {
                         pie.classList.remove('hidden'); results.classList.add('hidden');
@@ -176,6 +182,7 @@
                     }
                     currentTime += 180;
                 }
+                // 2. RESULTS
                 if (steps.includes('results')) {
                     if (elapsed < (currentTime + 60) * 1000) {
                         title.innerText = "Natuurlijke Verjonging";
@@ -185,47 +192,48 @@
                         const targetFit = parseInt(sessionData.fitAge);
                         const startCal = parseInt(sessionData.calAge);
                         if (document.getElementById('meterFill').style.width !== "100%") {
-                            setTimeout(() => {
-                                document.getElementById('meterFill').style.width = "100%";
-                                animateAgeCount(startCal, targetFit, 10000);
-                            }, 500);
+                            setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(startCal, targetFit, 10000); }, 500);
                         }
                         return;
                     }
                     currentTime += 60;
                 }
+                // 3. SCIENCE
                 if (steps.includes('science')) {
-                    if (elapsed < (currentTime + 120) * 1000) {
+                    if (elapsed < (currentTime + 90) * 1000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden');
                         let ms = elapsed - (currentTime * 1000);
-                        updateCircleUI(selectedTexts[["g","h","i","j"][Math.floor(ms / 30000)]], ms % 30000);
+                        let idx = Math.floor(ms / 30000);
+                        updateCircleUI(selectedTexts[["g","h","i"][idx]], ms % 30000);
                         return;
                     }
-                    currentTime += 120;
+                    currentTime += 90;
                 }
+                // 4. BREATHING
                 if (steps.includes('breathing')) {
                     if (elapsed < (currentTime + 30) * 1000) {
                         title.innerText = "Breng je adem tot rust"; 
-                        // FIX: Reset ondertitel expliciet voor prep
-                        sub.innerText = "Bereid je voor op de Box Breathing. Focus op een rustige neusademhaling.";
+                        sub.innerText = "Focus op een rustige neusademhaling.";
                         pie.classList.add('hidden'); prep.classList.remove('hidden');
                         prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
                         return;
                     }
                     currentTime += 30;
-                    if (elapsed < (currentTime + 210) * 1000) {
+                    if (elapsed < (currentTime + 180) * 1000) {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
                         document.getElementById('breathingArea').classList.remove('hidden');
                         startBreathing(); return;
                     }
-                    currentTime += 210;
+                    currentTime += 180;
                 }
+                // 5. END MESSAGE
                 if (steps.includes('end')) {
+                    document.getElementById('breathingArea').classList.add('hidden');
+                    document.getElementById('actionArea').classList.remove('hidden');
                     prep.classList.add('hidden'); pie.classList.remove('hidden');
                     title.innerText = `Klaar voor de week, ${sessionData.user}!`;
-                    // FIX: Reset ondertitel voor eindboodschap
-                    sub.innerText = "Verlaat rustig de stoel. Geniet van je herstel!";
+                    sub.innerText = "Verlaat rustig de stoel. We zien je graag weer bij je volgende training. Geniet van je herstel!";
                     document.getElementById('flowCircleContent').innerText = "✓";
                     pie.style.background = "var(--light-gray)";
                 }
@@ -242,13 +250,8 @@
                 let current = Math.round(start - (progress / duration) * (start - end));
                 if (current < end) current = end;
                 display.innerText = current;
-                if (progress < duration) {
-                    window.requestAnimationFrame(step);
-                } else {
-                    display.innerText = end;
-                    badge.innerText = `Je traint op het niveau van iemand die ${start - end} jaar jonger is`;
-                    badge.classList.add('show');
-                }
+                if (progress < duration) { window.requestAnimationFrame(step); } 
+                else { display.innerText = end; badge.innerText = `Je traint op het niveau van iemand die ${start - end} jaar jonger is`; badge.classList.add('show'); }
             }
             window.requestAnimationFrame(step);
         }
@@ -262,17 +265,31 @@
         }
 
         function startBreathing() {
-            const bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
-            let step = 1, phase = 0, total = 210;
+            const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
+            let step = 1, phase = 0, total = 180; // 3 minuten box breathing
             const phases = ["Adem in", "Vast houden", "Adem uit", "Vast houden"];
             bPie.style.background = "var(--light-gray)"; 
             const bInt = setInterval(() => {
-                bTitle.innerText = phases[phase];
-                bContent.innerText = step;
+                bTitle.innerText = phases[phase]; bContent.innerText = step;
                 if (phase === 0) bPie.style.transform = "scale(1.4)";
                 if (phase === 2) bPie.style.transform = "scale(0.8)";
+                
+                // FADE OUT LOGICA: In de laatste 6 seconden
+                if (total <= 6) { bArea.classList.add('soft-fade'); }
+
                 if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
-                if (total-- <= 0) { clearInterval(bInt); location.reload(); }
+                if (total-- <= 0) { 
+                    clearInterval(bInt); 
+                    bArea.classList.remove('soft-fade'); // Reset fade voor volgende sessie
+                    // TRIGGER DE EINDBOODSCHAP (Handmatig tijd herberekenen of triggeren)
+                    const endTitle = `Klaar voor de week, ${sessionData.user}!`;
+                    document.getElementById('breathingArea').classList.add('hidden');
+                    document.getElementById('actionArea').classList.remove('hidden');
+                    document.getElementById('mainTitle').innerText = endTitle;
+                    document.getElementById('mainSubText').innerText = "Verlaat rustig de stoel. Geniet van je herstel!";
+                    document.getElementById('flowCircle').classList.remove('hidden');
+                    document.getElementById('flowCircleContent').innerText = "✓";
+                }
             }, 1000);
         }
         setInterval(checkInbox, 3000);
