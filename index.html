@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v1.6</title>
+    <title>fit20 Recovery v1.7</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        .version-tag { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #eee; z-index: 1000; }
+        /* Versie Tag - nu met ID voor JS controle */
+        #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #ddd; z-index: 1000; }
 
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2vh 5vw; text-align: center; }
@@ -24,31 +25,19 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 850px; margin-bottom: 2vh; }
 
-        /* RESULTS v1.6 - STARBURST BADGE COMPACT */
+        /* RESULTS v1.7 - BADGE & METER */
         #resultsArea { width: 100%; max-width: 850px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
-
         .age-badge { 
-            background: var(--fit20-green); color: white; 
-            width: 280px; height: 280px; 
+            background: var(--fit20-green); color: white; width: 280px; height: 280px; 
             display: flex; align-items: center; justify-content: center;
             clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
-            font-size: 1.8vw; font-weight: 800; line-height: 1.2;
-            padding: 40px; text-align: center;
-            opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin: 2vh 0;
+            font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 40px; text-align: center;
+            opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin: 2vh 0;
         }
         .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
 
-        .meter-container { 
-            width: 100%; height: 44px; background: #eee; border-radius: 22px; 
-            position: relative; margin: 8vh 0 2vh 0; 
-            border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
-        }
-        .meter-fill { 
-            height: 100%; background: var(--fit20-green); border-radius: 22px; 
-            position: absolute; top: 0; right: 0; bottom: 0;
-            width: 0%; transition: width 10s linear; 
-        }
+        .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 8vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; bottom: 0; width: 0%; transition: width 10s linear; }
         
         .age-display { position: absolute; top: -75px; display: flex; flex-direction: column; align-items: center; }
         .age-display .label { font-size: 1.2vw; color: #999; font-weight: bold; margin-bottom: 2px; }
@@ -57,7 +46,7 @@
         .label-left { left: 0; transform: translateX(-5%); }
         .label-right { right: 0; transform: translateX(5%); }
 
-        /* Overige */
+        /* Flow & Breathing */
         .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); margin-top: 2vh; }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
@@ -71,21 +60,19 @@
     </style>
 </head>
 <body>
-    <div class="version-tag">v1.6</div>
+    <div id="vTag">v1.7</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p class="sub-text" id="personalMsg">Wachten op activatie...</p>
-        <button id="startActionBtn" class="hidden">START</button>
+        <p class="sub-text" id="personalMsg">Systeem gereed. Wachten op trainer...</p>
+        <button id="startActionBtn" class="hidden">START RECOVERY</button>
     </div>
 
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
         <p class="sub-text" id="mainSubText">...</p>
-        
         <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
-
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge">...</div>
             <div class="meter-container">
@@ -101,9 +88,7 @@
         <div class="instruction-title" id="breathTitle">Adem in</div>
         <div id="boxBreathingLayout">
             <div class="layout-left"><img src="box-breathe-instructie.png" class="instruction-image"></div>
-            <div class="layout-right">
-                <div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div>
-            </div>
+            <div class="layout-right"><div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div></div>
         </div>
     </div>
 
@@ -136,8 +121,11 @@
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
+                    // FIX: Directe status-update
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
+                    document.getElementById('personalMsg').innerText = "Klaar voor je verjonging? Druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
+                    
                     let t = 0;
                     if(sessionData.steps.includes('recovery')) t += 180;
                     if(sessionData.steps.includes('results')) t += 60;
@@ -163,6 +151,9 @@
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
+            // FIX: Versie-tag verbergen tijdens sessie
+            document.getElementById('vTag').classList.add('hidden');
+
             const tInt = setInterval(() => {
                 let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -173,10 +164,8 @@
         });
 
         function runMasterFlow() {
-            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText');
-            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document.getElementById('prepCountdown');
+            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubText'), pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document.getElementById('prepCountdown');
             let start = Date.now();
-            
             const masterInt = setInterval(() => {
                 let elapsed = Date.now() - start;
                 let steps = sessionData.steps;
@@ -191,7 +180,6 @@
                     }
                     currentTime += 180;
                 }
-
                 if (steps.includes('results')) {
                     if (elapsed < (currentTime + 60) * 1000) {
                         title.innerText = "Natuurlijke Verjonging";
@@ -210,7 +198,6 @@
                     }
                     currentTime += 60;
                 }
-
                 if (steps.includes('science')) {
                     if (elapsed < (currentTime + 120) * 1000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden');
@@ -220,7 +207,6 @@
                     }
                     currentTime += 120;
                 }
-
                 if (steps.includes('breathing')) {
                     if (elapsed < (currentTime + 30) * 1000) {
                         title.innerText = "Breng je adem tot rust"; pie.classList.add('hidden'); prep.classList.remove('hidden');
@@ -236,7 +222,6 @@
                     }
                     currentTime += 210;
                 }
-
                 if (steps.includes('end')) {
                     prep.classList.add('hidden'); pie.classList.remove('hidden');
                     title.innerText = `Klaar voor de week, ${sessionData.user}!`;
