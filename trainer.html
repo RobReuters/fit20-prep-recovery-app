@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App v1.3</title>
+    <title>fit20 Trainer App v1.4</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
         body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); }
@@ -21,21 +21,20 @@
     </style>
 </head>
 <body>
-<div class="version-tag">v1.3</div>
+<div class="version-tag">v1.4</div>
 <div class="container">
-    <h2>Recovery Control v1.3</h2>
+    <h2>Recovery Control v1.4</h2>
     <div class="grid">
         <div class="col">
             <label>Lid Naam:</label>
             <input type="text" id="fname">
-            <label>Kalenderleeftijd:</label>
-            <input type="number" id="calAge">
-            <label>fit20 Age:</label>
-            <input type="number" id="fitAge">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><label>Kalender:</label><input type="number" id="calAge"></div>
+                <div><label>fit20 Age:</label><input type="number" id="fitAge"></div>
+            </div>
             <label>Geslacht:</label>
             <label class="option"><input type="radio" name="gender" value="v" checked> Vrouw</label>
             <label class="option"><input type="radio" name="gender" value="m"> Man</label>
-            <label class="option"><input type="radio" name="gender" value="both"> Neutraal</label>
         </div>
         <div class="col">
             <label>Hoofddoelen (max 2):</label>
@@ -63,25 +62,14 @@
 <script>
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
-    
-    // Limiet 2 profielen
-    document.querySelectorAll('#profileGroup input').forEach(cb => {
-        cb.addEventListener('change', () => {
-            if(document.querySelectorAll('#profileGroup input:checked').length > 2) cb.checked = false;
-        });
-    });
-
     document.getElementById('sendBtn').addEventListener('click', async () => {
         const name = document.getElementById('fname').value;
         const cal = document.getElementById('calAge').value;
         const fit = document.getElementById('fitAge').value;
         if(!name || !cal || !fit) return alert("Vul alles in");
-
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
         const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
-
-        document.getElementById('status').innerText = "Versturen...";
         try {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
