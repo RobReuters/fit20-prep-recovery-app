@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v1.5</title>
+    <title>fit20 Recovery v1.6</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,66 +13,65 @@
         .version-tag { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #eee; z-index: 1000; }
 
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
-        .middle-section { height: 65vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5vw; text-align: center; }
-        .bottom-section { height: 25vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+        .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 2vh 5vw; text-align: center; }
+        .bottom-section { height: 20vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
 
-        .logo { position: absolute; bottom: 30px; right: 30px; width: 25vw; max-width: 250px; }
+        .logo { position: absolute; bottom: 20px; right: 20px; width: 22vw; max-width: 220px; z-index: 100; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
-        .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
-        .sub-text { font-size: 2vw; color: #666; line-height: 1.5; max-width: 900px; min-height: 3em; }
+        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; }
+        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 850px; margin-bottom: 2vh; }
 
-        /* RESULTS v1.5 - STARBURST BADGE */
-        #resultsArea { width: 100%; max-width: 950px; display: flex; flex-direction: column; align-items: center; }
+        /* RESULTS v1.6 - STARBURST BADGE COMPACT */
+        #resultsArea { width: 100%; max-width: 850px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
 
         .age-badge { 
             background: var(--fit20-green); color: white; 
-            width: 450px; /* Vaste breedte voor perfecte vorm */
-            height: 450px; /* Vaste hoogte voor perfecte vorm */
+            width: 280px; height: 280px; 
             display: flex; align-items: center; justify-content: center;
             clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
-            font-size: 2.2vw; font-weight: 800; line-height: 1.2;
-            padding: 60px; text-align: center;
+            font-size: 1.8vw; font-weight: 800; line-height: 1.2;
+            padding: 40px; text-align: center;
             opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin-bottom: 20px;
+            margin: 2vh 0;
         }
         .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
 
         .meter-container { 
-            width: 100%; height: 50px; background: #eee; border-radius: 25px; 
-            position: relative; margin: 100px 0 40px 0; 
-            border: 4px solid white; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); 
+            width: 100%; height: 44px; background: #eee; border-radius: 22px; 
+            position: relative; margin: 8vh 0 2vh 0; 
+            border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
         }
         .meter-fill { 
-            height: 100%; background: var(--fit20-green); border-radius: 25px; 
+            height: 100%; background: var(--fit20-green); border-radius: 22px; 
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 0%; transition: width 10s linear; 
         }
         
-        .age-display { position: absolute; top: -100px; display: flex; flex-direction: column; align-items: center; }
-        .age-display .label { font-size: 1.4vw; color: #999; font-weight: bold; margin-bottom: 5px; }
-        .age-display .number { font-size: 6vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
+        .age-display { position: absolute; top: -75px; display: flex; flex-direction: column; align-items: center; }
+        .age-display .label { font-size: 1.2vw; color: #999; font-weight: bold; margin-bottom: 2px; }
+        .age-display .number { font-size: 5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
         
-        .label-left { left: 0; transform: translateX(-10%); }
-        .label-right { right: 0; transform: translateX(10%); }
+        .label-left { left: 0; transform: translateX(-5%); }
+        .label-right { right: 0; transform: translateX(5%); }
 
-        /* Overige layouts */
-        .visual-circle { width: 280px; height: 280px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
-        .visual-circle::after { content: ""; width: 230px; height: 230px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
-        .circle-number { z-index: 10; font-size: 90px; font-weight: 800; color: var(--fit20-green); position: relative; }
+        /* Overige */
+        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); margin-top: 2vh; }
+        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
+        .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
         #boxBreathingLayout { display: flex; width: 100%; height: 100%; align-items: center; }
         .layout-left { flex: 2; display: flex; justify-content: center; }
         .layout-right { flex: 1; display: flex; justify-content: center; }
-        .instruction-image { max-width: 95%; max-height: 50vh; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        #prepCountdown { font-size: 18vw; font-weight: 800; color: var(--fit20-green); }
-        #startActionBtn { padding: 4vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 4vw; font-weight: bold; cursor: pointer; }
+        .instruction-image { max-width: 90%; max-height: 45vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        #prepCountdown { font-size: 15vw; font-weight: 800; color: var(--fit20-green); }
+        #startActionBtn { padding: 3vh 6vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 4vw; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="version-tag">v1.5</div>
+    <div class="version-tag">v1.6</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -137,11 +136,8 @@
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
-                    // HERSTEL NAAMWEERGAVE
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
-                    document.getElementById('personalMsg').innerText = "Klaar voor je verjonging?";
                     document.getElementById('startActionBtn').classList.remove('hidden');
-                    
                     let t = 0;
                     if(sessionData.steps.includes('recovery')) t += 180;
                     if(sessionData.steps.includes('results')) t += 60;
