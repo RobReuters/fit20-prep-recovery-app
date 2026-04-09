@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v2.5</title>
+    <title>fit20 Recovery v2.6</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* Versie Tag - Donkerder grijs voor betere leesbaarheid */
         #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #888; z-index: 1000; }
 
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
@@ -28,17 +27,15 @@
         /* RESULTS AREA */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         .age-badge { 
-            background: var(--fit20-blue); color: white; width: 300px; height: 300px; 
+            background: var(--fit20-blue); color: white; width: 280px; height: 280px; 
             display: flex; align-items: center; justify-content: center;
             clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
             font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 45px; text-align: center;
             opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .age-badge.show { opacity: 1; transform: scale(1); }
-
         .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 10vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; bottom: 0; width: 0%; transition: width 10s linear; }
-        
         .age-display { position: absolute; top: -105px; display: flex; flex-direction: column; align-items: center; }
         .age-display .number { font-size: 5.5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
         .label-left { left: 0; transform: translateX(-5%); }
@@ -61,12 +58,12 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v2.5</div>
+    <div id="vTag">v2.6</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Laden...</p>
+        <p id="personalMsg" class="sub-text">Laden van cloud data...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
@@ -106,36 +103,58 @@
         const CONTENT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
         const LABELS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=583309678&single=true&output=csv';
 
-        let reservoir = [], labels = {}, sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 600, currentTimer = 600;
+        let reservoir = [], labels = {}, sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 0, currentTimer = 0;
+
+        // Robuuste CSV parser die rekening houdt met quotes en komma's
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else { current += char; }
+            }
+            result.push(current.trim());
+            return result;
+        }
 
         async function loadData() {
+            const msgBox = document.getElementById('personalMsg');
             try {
                 const [resContent, resLabels] = await Promise.all([
                     fetch(CONTENT_URL + '&t=' + Date.now()),
                     fetch(LABELS_URL + '&t=' + Date.now())
                 ]);
-                
-                let csvContent = await resContent.text();
+
+                if (!resContent.ok || !resLabels.ok) throw new Error("Netwerkfout bij laden Sheets");
+
+                const csvContent = await resContent.text();
                 reservoir = csvContent.split(/\r?\n/).slice(1).map(line => {
-                    const c = line.split(/[;,]/);
-                    return { cat: c[0]?.trim().toLowerCase(), gender: c[1]?.trim().toLowerCase(), profile: c[2]?.trim().toLowerCase(), title: c[3]?.trim(), text: c[4]?.trim() };
-                });
+                    const c = parseCSVLine(line);
+                    if (c.length < 5) return null;
+                    return { cat: c[0].toLowerCase(), gender: c[1].toLowerCase(), profile: c[2].toLowerCase(), title: c[3], text: c[4] };
+                }).filter(x => x);
 
-                let csvLabels = await resLabels.text();
+                const csvLabels = await resLabels.text();
                 csvLabels.split(/\r?\n/).slice(1).forEach(line => {
-                    if (!line.trim()) return;
-                    // SLIMME CSV PARSER: split bij komma maar negeer komma's tussen quotes
-                    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (cols.length >= 2) {
-                        const key = cols[0].replace(/^"|"$/g, '').trim();
-                        let valNL = cols[1].replace(/^"|"$/g, '').trim().replace(/""/g, '"');
-                        if(key) labels[key] = valNL;
-                    }
+                    const c = parseCSVLine(line);
+                    if (c.length >= 2 && c[0]) labels[c[0]] = c[1];
                 });
 
-                document.getElementById('personalMsg').innerText = labels.setup_msg || "Systeem gereed. Wachten op trainer...";
+                msgBox.innerText = labels.setup_msg || "Systeem gereed. Wachten op trainer...";
                 document.getElementById('startActionBtn').innerText = labels.start_btn || "START";
-            } catch (e) { document.getElementById('personalMsg').innerText = "Fout bij laden data."; }
+                console.log("Data succesvol geladen", labels);
+
+            } catch (e) {
+                console.error(e);
+                msgBox.innerHTML = "<span style='color:red'>Fout bij laden: Controleer of de Sheets zijn gepubliceerd als CSV.</span>";
+            }
         }
         loadData();
 
@@ -154,7 +173,7 @@
                     if(sessionData.steps.includes('recovery')) t += 180;
                     if(sessionData.steps.includes('results')) t += 60;
                     if(sessionData.steps.includes('science')) t += 120;
-                    if(sessionData.steps.includes('breathing')) t += 210;
+                    if(sessionData.steps.includes('breathing')) t += 240;
                     totalSeconds = t; currentTimer = t;
 
                     selectedTexts = ["a","b","c","d","e","f","g","h","i","j"].reduce((acc, cat) => { acc[cat] = pickText(cat); return acc; }, {});
@@ -175,7 +194,6 @@
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('vTag').style.display = 'none';
-
             const tInt = setInterval(() => {
                 let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -187,4 +205,121 @@
 
         function runMasterFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
-            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document
+            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document.getElementById('prepCountdown');
+            let start = Date.now(), activeSteps = sessionData.steps;
+
+            const masterInt = setInterval(() => {
+                let elapsed = Date.now() - start, currentTime = 0;
+
+                if (activeSteps.includes('recovery')) {
+                    if (elapsed < (currentTime + 180) * 1000) {
+                        pie.classList.remove('hidden'); results.classList.add('hidden');
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["a","b","c","d","e","f"][Math.floor(ms / 30000)]], ms % 30000);
+                        return;
+                    }
+                    currentTime += 180;
+                }
+                if (activeSteps.includes('results')) {
+                    if (elapsed < (currentTime + 60) * 1000) {
+                        title.innerText = labels.results_title || "..."; sub.innerText = labels.results_sub || "...";
+                        pie.classList.add('hidden'); results.classList.remove('hidden');
+                        document.getElementById('valCal').innerText = sessionData.calAge;
+                        if (document.getElementById('meterFill').style.width !== "100%") {
+                            setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge), 10000); }, 500);
+                        }
+                        return;
+                    }
+                    currentTime += 60;
+                }
+                if (activeSteps.includes('science')) {
+                    if (elapsed < (currentTime + 120) * 1000) {
+                        results.classList.add('hidden'); pie.classList.remove('hidden');
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["g","h","i","j"][Math.floor(ms / 30000)]], ms % 30000);
+                        return;
+                    }
+                    currentTime += 120;
+                }
+                if (activeSteps.includes('breathing')) {
+                    if (elapsed < (currentTime + 30) * 1000) {
+                        title.innerText = labels.prep_title || "..."; sub.innerText = labels.prep_sub || "...";
+                        pie.classList.add('hidden'); prep.classList.remove('hidden');
+                        prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
+                        return;
+                    }
+                    currentTime += 30;
+                    if (elapsed < (currentTime + 210) * 1000) {
+                        clearInterval(masterInt);
+                        document.getElementById('actionArea').classList.add('hidden');
+                        document.getElementById('breathingArea').classList.remove('hidden');
+                        startBreathing(); return;
+                    }
+                }
+                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinalMessage(); } else { location.reload(); }
+            }, 50);
+        }
+
+        function animateAgeCount(start, end, duration) {
+            const display = document.getElementById('dynamicAge'), badge = document.getElementById('ageDiffBadge');
+            let startTime = null;
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = timestamp - startTime;
+                let current = Math.round(start - (progress / duration) * (start - end));
+                if (current < end) current = end;
+                display.innerText = current;
+                if (progress < duration) window.requestAnimationFrame(step);
+                else { 
+                    display.innerText = end; 
+                    const t = labels.badge_text || "Je traint op het niveau van iemand die {diff} jaar jonger is";
+                    badge.innerText = t.replace('{diff}', (start - end));
+                    badge.classList.add('show'); 
+                }
+            }
+            window.requestAnimationFrame(step);
+        }
+
+        function updateCircleUI(data, ms) {
+            if(!data) return;
+            document.getElementById('mainTitle').innerText = data.title;
+            document.getElementById('mainSubContainer').innerText = data.text;
+            let deg = (ms / 30000) * 360;
+            document.getElementById('flowCircle').style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+        }
+
+        function startBreathing() {
+            const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
+            let step = 1, phase = 0, total = 210;
+            const phases = ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
+            bPie.style.background = "var(--light-gray)"; 
+            const bInt = setInterval(() => {
+                bTitle.innerText = phases[phase]; bContent.innerText = step;
+                if (phase === 0) bPie.style.transform = "scale(1.4)";
+                if (phase === 2) bPie.style.transform = "scale(0.8)";
+                if (total <= 6) bArea.classList.add('soft-fade');
+                if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
+                if (total-- <= 0) { 
+                    clearInterval(bInt); 
+                    if(sessionData.steps.includes('end')) showFinalMessage(); else location.reload();
+                }
+            }, 1000);
+        }
+
+        function showFinalMessage() {
+            document.getElementById('breathingArea').classList.add('hidden');
+            const area = document.getElementById('actionArea'), title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer'), pie = document.getElementById('flowCircle'), content = document.getElementById('flowCircleContent');
+            area.classList.remove('hidden');
+            document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('prepCountdown').classList.add('hidden');
+            const t = labels.end_title || "Klaar voor de week, {user}!";
+            title.innerText = t.replace('{user}', sessionData.user);
+            sub.innerText = labels.end_sub || "...";
+            pie.className = "visual-circle"; pie.style.background = "var(--light-gray)"; pie.style.transform = "none";
+            content.innerText = "✓"; 
+            setTimeout(() => location.reload(), 30000);
+        }
+        setInterval(checkInbox, 3000);
+    </script>
+</body>
+</html>
