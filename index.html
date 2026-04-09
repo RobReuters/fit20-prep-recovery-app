@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>fit20 Recovery v1.3</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>fit20 Recovery v1.4</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,26 +22,43 @@
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
         .instruction-title { font-size: 4.5vw; font-weight: 700; margin-bottom: 2vh; }
-        .sub-text { font-size: 2.2vw; color: #666; line-height: 1.5; max-width: 900px; min-height: 3em; }
+        .sub-text { font-size: 2vw; color: #666; line-height: 1.5; max-width: 900px; min-height: 3em; }
 
-        /* RESULTS v1.3 */
-        #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
+        /* RESULTS v1.4 - DASHBOARD */
+        #resultsArea { width: 100%; max-width: 950px; display: flex; flex-direction: column; align-items: center; }
+
+        /* Nieuwe Starburst Badge */
         .age-badge { 
-            background: var(--fit20-green); color: white; padding: 20px 50px; border-radius: 100px; 
-            font-size: 4vw; font-weight: 800; margin-bottom: 30px; 
-            opacity: 0; transform: scale(0.8); transition: all 1s ease-out;
+            background: var(--fit20-green); color: white; 
+            padding: 40px 60px; 
+            clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
+            font-size: 2.2vw; font-weight: 800; line-height: 1.2;
+            max-width: 500px; text-align: center;
+            opacity: 0; transform: scale(0.5) rotate(-10deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 40px;
         }
-        .age-badge.show { opacity: 1; transform: scale(1); }
+        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
 
-        .meter-container { width: 100%; height: 65px; background: #eee; border-radius: 35px; position: relative; margin: 60px 0; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 35px; position: absolute; right: 0; width: 0%; transition: width 10s linear; }
+        .meter-container { 
+            width: 100%; height: 50px; background: #eee; border-radius: 25px; 
+            position: relative; margin: 80px 0 40px 0; 
+            border: 4px solid white; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .meter-fill { 
+            height: 100%; background: var(--fit20-green); border-radius: 25px; 
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 0%; transition: width 10s linear; 
+        }
         
-        .age-display { position: absolute; top: -70px; display: flex; flex-direction: column; align-items: center; }
-        #dynamicAge { font-size: 5vw; font-weight: 900; color: var(--fit20-green); transition: color 0.5s; }
-        .label-left { left: 0; transform: translateX(-20%); }
-        .label-right { right: 0; font-size: 1.8vw; color: #bbb; top: -45px; }
+        /* Gedeelde stijl voor labels boven de balk */
+        .age-display { position: absolute; top: -85px; display: flex; flex-direction: column; align-items: center; }
+        .age-display .label { font-size: 1.4vw; color: #999; font-weight: bold; text-transform: none; margin-bottom: 5px; }
+        .age-display .number { font-size: 5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
+        
+        .label-left { left: 0; transform: translateX(-10%); }
+        .label-right { right: 0; transform: translateX(10%); }
 
-        /* Breathing & Circles */
+        /* Breathing & Overige */
         .visual-circle { width: 280px; height: 280px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 230px; height: 230px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 90px; font-weight: 800; color: var(--fit20-green); position: relative; }
@@ -54,11 +72,11 @@
     </style>
 </head>
 <body>
-    <div class="version-tag">v1.3</div>
+    <div class="version-tag">v1.4</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
-        <h1 id="userName" style="font-size: 6vw;">fit20 Recovery</h1>
+        <h1 style="font-size: 6vw;">fit20 Recovery</h1>
         <p class="sub-text" id="personalMsg">Wachten op activatie...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
@@ -70,13 +88,17 @@
         <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
 
         <div id="resultsArea" class="hidden">
-            <div class="age-badge" id="ageDiffBadge">- 0 JAAR</div>
+            <div class="age-badge" id="ageDiffBadge">Je traint op het niveau van iemand die .. jaar jonger is</div>
+            
             <div class="meter-container">
                 <div class="age-display label-left">
-                    <span style="font-size: 1.2vw; color: #999; font-weight: bold;">fit20 AGE</span>
-                    <span id="dynamicAge">0</span>
+                    <span class="label">fit20 Age</span>
+                    <span id="dynamicAge" class="number">0</span>
                 </div>
-                <div class="age-label label-right">Kalender: <span id="valCal">0</span></div>
+                <div class="age-display label-right">
+                    <span class="label">Kalender</span>
+                    <span id="valCal" class="number">0</span>
+                </div>
                 <div class="meter-fill" id="meterFill"></div>
             </div>
         </div>
@@ -122,7 +144,6 @@
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
-                    document.getElementById('userName').innerText = "Hallo " + sessionData.user;
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     let t = 0;
                     if(sessionData.steps.includes('recovery')) t += 180;
@@ -180,15 +201,14 @@
 
                 if (steps.includes('results')) {
                     if (elapsed < (currentTime + 60) * 1000) {
-                        title.innerText = "Jouw Biologische Verjonging";
-                        sub.innerText = "Terwijl de kalender vooruit loopt, draaien wij jouw klok terug.";
+                        title.innerText = "Natuurlijke Verjonging";
+                        sub.innerText = "fit20 is de meest natuurlijke verjongingsprikkel die je jezelf kan geven!";
                         pie.classList.add('hidden'); results.classList.remove('hidden');
                         
                         document.getElementById('valCal').innerText = sessionData.calAge;
                         const targetFit = parseInt(sessionData.fitAge);
                         const startCal = parseInt(sessionData.calAge);
                         
-                        // Start 10s animatie
                         if (document.getElementById('meterFill').style.width !== "100%") {
                             setTimeout(() => {
                                 document.getElementById('meterFill').style.width = "100%";
@@ -251,7 +271,8 @@
                     window.requestAnimationFrame(step);
                 } else {
                     display.innerText = end;
-                    badge.innerText = `VERJONGING: - ${start - end} JAAR`;
+                    const diff = start - end;
+                    badge.innerText = `Je traint op het niveau van iemand die ${diff} jaar jonger is`;
                     badge.classList.add('show');
                 }
             }
