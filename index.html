@@ -4,69 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v2.6</title>
+    <title>fit20 Recovery v2.7</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
-        
         #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #888; z-index: 1000; }
-
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5vw; text-align: center; }
         .bottom-section { height: 20vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
-
         .logo { position: fixed; bottom: 4vh; right: 4vw; width: 20vw; max-width: 220px; z-index: 1000; }
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
-
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
-
-        /* RESULTS AREA */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        .age-badge { 
-            background: var(--fit20-blue); color: white; width: 280px; height: 280px; 
-            display: flex; align-items: center; justify-content: center;
-            clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
-            font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 45px; text-align: center;
-            opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .age-badge.show { opacity: 1; transform: scale(1); }
+        .age-badge { background: var(--fit20-blue); color: white; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
         .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 10vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; bottom: 0; width: 0%; transition: width 10s linear; }
         .age-display { position: absolute; top: -105px; display: flex; flex-direction: column; align-items: center; }
         .age-display .number { font-size: 5.5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
-        .label-left { left: 0; transform: translateX(-5%); }
-        .label-right { right: 0; transform: translateX(5%); }
-
         .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
-
-        #boxBreathingLayout { display: flex; width: 100%; height: 100%; align-items: center; }
-        .layout-left { flex: 2; display: flex; justify-content: center; }
-        .layout-right { flex: 1; display: flex; justify-content: center; }
         .instruction-image { max-width: 95%; max-height: 48vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        #prepCountdown { font-size: 15vw; font-weight: 800; color: var(--fit20-green); margin-top: -2vh; }
-        #startActionBtn { padding: 3vh 6vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer; }
-        
         .hidden { display: none !important; }
         .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
     </style>
 </head>
 <body>
-    <div id="vTag">v2.6</div>
+    <div id="vTag">v2.7</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
-
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Laden van cloud data...</p>
+        <p id="personalMsg" class="sub-text">Laden...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
-
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
         <div id="mainSubContainer" class="sub-text">...</div>
@@ -74,28 +49,21 @@
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge">...</div>
             <div class="meter-container">
-                <div class="age-display label-left"><span style="font-size:1.2vw; color:#999; font-weight:bold;">fit20 Age</span><span id="dynamicAge" class="number">0</span></div>
-                <div class="age-display label-right"><span style="font-size:1.2vw; color:#999; font-weight:bold;">Kalender</span><span id="valCal" class="number">0</span></div>
+                <div class="age-display" style="left:0; transform:translateX(-5%);"><span id="labelFit" style="font-size:1.2vw; color:#999; font-weight:bold;">fit20 Age</span><span id="dynamicAge" class="number">0</span></div>
+                <div class="age-display" style="right:0; transform:translateX(5%);"><span id="labelCal" style="font-size:1.2vw; color:#999; font-weight:bold;">Kalender</span><span id="valCal" class="number">0</span></div>
                 <div class="meter-fill" id="meterFill"></div>
             </div>
         </div>
-        <div id="prepCountdown" class="hidden">30</div>
+        <div id="prepCountdown" class="hidden" style="font-size:15vw; font-weight:800; color:var(--fit20-green);">30</div>
     </div>
-
     <div class="middle-section hidden" id="breathingArea">
         <div class="instruction-title" id="breathTitle">Adem in</div>
-        <div id="boxBreathingLayout">
-            <div class="layout-left"><img src="box-breathe-instructie.png" class="instruction-image"></div>
-            <div class="layout-right">
-                <div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div>
-            </div>
+        <div style="display:flex; width:100%; align-items:center;">
+            <div style="flex:2;"><img src="box-breathe-instructie.png" class="instruction-image"></div>
+            <div style="flex:1;"><div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div></div>
         </div>
     </div>
-
-    <div class="bottom-section">
-        <img src="fit20-logo.png" class="logo">
-        <div class="progress"><div id="bar"></div></div>
-    </div>
+    <div class="bottom-section"><img src="fit20-logo.png" class="logo"><div class="progress"><div id="bar"></div></div></div>
 
     <script>
         const BIN_ID = '69d00c00856a682189f8b7f6';
@@ -103,60 +71,32 @@
         const CONTENT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
         const LABELS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=583309678&single=true&output=csv';
 
-        let reservoir = [], labels = {}, sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 0, currentTimer = 0;
+        let reservoir = [], labelsRaw = [], sessionData = { lang: 'nl' }, isSessionActive = false, currentLabels = {};
 
-        // Robuuste CSV parser die rekening houdt met quotes en komma's
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-                    else { inQuotes = !inQuotes; }
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else { current += char; }
-            }
-            result.push(current.trim());
-            return result;
+        function parseCSV(text) {
+            return text.split(/\r?\n/).slice(1).map(line => {
+                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                return cols.map(c => c.replace(/^"|"$/g, '').trim().replace(/""/g, '"'));
+            });
         }
 
         async function loadData() {
-            const msgBox = document.getElementById('personalMsg');
             try {
-                const [resContent, resLabels] = await Promise.all([
-                    fetch(CONTENT_URL + '&t=' + Date.now()),
-                    fetch(LABELS_URL + '&t=' + Date.now())
-                ]);
-
-                if (!resContent.ok || !resLabels.ok) throw new Error("Netwerkfout bij laden Sheets");
-
-                const csvContent = await resContent.text();
-                reservoir = csvContent.split(/\r?\n/).slice(1).map(line => {
-                    const c = parseCSVLine(line);
-                    if (c.length < 5) return null;
-                    return { cat: c[0].toLowerCase(), gender: c[1].toLowerCase(), profile: c[2].toLowerCase(), title: c[3], text: c[4] };
-                }).filter(x => x);
-
-                const csvLabels = await resLabels.text();
-                csvLabels.split(/\r?\n/).slice(1).forEach(line => {
-                    const c = parseCSVLine(line);
-                    if (c.length >= 2 && c[0]) labels[c[0]] = c[1];
-                });
-
-                msgBox.innerText = labels.setup_msg || "Systeem gereed. Wachten op trainer...";
-                document.getElementById('startActionBtn').innerText = labels.start_btn || "START";
-                console.log("Data succesvol geladen", labels);
-
-            } catch (e) {
-                console.error(e);
-                msgBox.innerHTML = "<span style='color:red'>Fout bij laden: Controleer of de Sheets zijn gepubliceerd als CSV.</span>";
-            }
+                const [resC, resL] = await Promise.all([fetch(CONTENT_URL+'&t='+Date.now()), fetch(LABELS_URL+'&t='+Date.now())]);
+                reservoir = parseCSV(await resC.text());
+                labelsRaw = parseCSV(await resL.text());
+                updateUILanguage();
+            } catch (e) { document.getElementById('personalMsg').innerText = "Fout bij laden data."; }
         }
-        loadData();
+
+        function updateUILanguage() {
+            const langIdx = sessionData.lang === 'en' ? 2 : 1;
+            labelsRaw.forEach(row => { if(row[0]) currentLabels[row[0]] = row[langIdx]; });
+            document.getElementById('personalMsg').innerText = isSessionActive ? currentLabels.ready_msg : currentLabels.setup_msg;
+            document.getElementById('startActionBtn').innerText = currentLabels.start_btn;
+            document.getElementById('labelFit').innerText = sessionData.lang === 'en' ? "fit20 Age" : "fit20 Age";
+            document.getElementById('labelCal').innerText = sessionData.lang === 'en' ? "Calendar" : "Kalender";
+        }
 
         async function checkInbox() {
             if (isSessionActive || reservoir.length === 0) return;
@@ -165,27 +105,19 @@
                 const data = await res.json();
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
-                    document.getElementById('userName').innerText = "Hallo " + sessionData.user;
-                    document.getElementById('personalMsg').innerText = labels.ready_msg || "Klaar voor start?";
+                    updateUILanguage();
+                    document.getElementById('userName').innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo ") + sessionData.user;
                     document.getElementById('startActionBtn').classList.remove('hidden');
-                    
-                    let t = 0;
-                    if(sessionData.steps.includes('recovery')) t += 180;
-                    if(sessionData.steps.includes('results')) t += 60;
-                    if(sessionData.steps.includes('science')) t += 120;
-                    if(sessionData.steps.includes('breathing')) t += 240;
-                    totalSeconds = t; currentTimer = t;
-
-                    selectedTexts = ["a","b","c","d","e","f","g","h","i","j"].reduce((acc, cat) => { acc[cat] = pickText(cat); return acc; }, {});
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
                 }
             } catch (e) {}
         }
 
         function pickText(cat) {
-            const gender = sessionData.genders[0], profiles = sessionData.profiles;
-            const matches = reservoir.filter(t => t.cat === cat && (t.gender === "both" || gender === "both" || t.gender === gender) && (t.profile === "all" || profiles.includes(t.profile)));
-            return matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t.cat === cat);
+            const langIdx = sessionData.lang === 'en' ? [5, 6] : [3, 4];
+            const matches = reservoir.filter(t => t[0] === cat && (t[1] === "both" || t[1] === sessionData.genders[0]) && (t[2] === "all" || sessionData.profiles.includes(t[2])));
+            const pick = matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t[0] === cat);
+            return { title: pick[langIdx[0]], text: pick[langIdx[1]] };
         }
 
         document.getElementById('startActionBtn').addEventListener('click', function() {
@@ -194,105 +126,83 @@
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
             document.getElementById('vTag').style.display = 'none';
-            const tInt = setInterval(() => {
-                let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
-                document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                document.getElementById('bar').style.width = `${((totalSeconds - currentTimer) / totalSeconds) * 100}%`;
-                if (currentTimer-- <= 0) { clearInterval(tInt); }
-            }, 1000);
             runMasterFlow();
         });
 
         function runMasterFlow() {
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
             const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document.getElementById('prepCountdown');
-            let start = Date.now(), activeSteps = sessionData.steps;
+            let start = Date.now(), totalSeconds = 600, currentTimer = 600;
+
+            const tInt = setInterval(() => {
+                let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
+                document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                document.getElementById('bar').style.width = `${((totalSeconds - currentTimer) / totalSeconds) * 100}%`;
+                if (currentTimer-- <= 0) clearInterval(tInt);
+            }, 1000);
 
             const masterInt = setInterval(() => {
-                let elapsed = Date.now() - start, currentTime = 0;
-
-                if (activeSteps.includes('recovery')) {
-                    if (elapsed < (currentTime + 180) * 1000) {
-                        pie.classList.remove('hidden'); results.classList.add('hidden');
-                        let ms = elapsed - (currentTime * 1000);
-                        updateCircleUI(selectedTexts[["a","b","c","d","e","f"][Math.floor(ms / 30000)]], ms % 30000);
-                        return;
-                    }
-                    currentTime += 180;
+                let elapsed = Date.now() - start;
+                // 1. RECOVERY (0-3m)
+                if (elapsed < 180000) {
+                    const data = pickText(["a","b","c","d","e","f"][Math.floor(elapsed / 30000)]);
+                    title.innerText = data.title; sub.innerText = data.text;
+                    let deg = (elapsed % 30000 / 30000) * 360;
+                    pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+                    return;
                 }
-                if (activeSteps.includes('results')) {
-                    if (elapsed < (currentTime + 60) * 1000) {
-                        title.innerText = labels.results_title || "..."; sub.innerText = labels.results_sub || "...";
-                        pie.classList.add('hidden'); results.classList.remove('hidden');
-                        document.getElementById('valCal').innerText = sessionData.calAge;
-                        if (document.getElementById('meterFill').style.width !== "100%") {
-                            setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge), 10000); }, 500);
-                        }
-                        return;
+                // 2. RESULTS (3-4m)
+                if (elapsed < 240000) {
+                    title.innerText = currentLabels.results_title; sub.innerText = currentLabels.results_sub;
+                    pie.classList.add('hidden'); results.classList.remove('hidden');
+                    document.getElementById('valCal').innerText = sessionData.calAge;
+                    if (document.getElementById('meterFill').style.width !== "100%") {
+                        setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge)); }, 500);
                     }
-                    currentTime += 60;
+                    return;
                 }
-                if (activeSteps.includes('science')) {
-                    if (elapsed < (currentTime + 120) * 1000) {
-                        results.classList.add('hidden'); pie.classList.remove('hidden');
-                        let ms = elapsed - (currentTime * 1000);
-                        updateCircleUI(selectedTexts[["g","h","i","j"][Math.floor(ms / 30000)]], ms % 30000);
-                        return;
-                    }
-                    currentTime += 120;
+                // 3. SCIENCE (4-6m)
+                if (elapsed < 360000) {
+                    results.classList.add('hidden'); pie.classList.remove('hidden');
+                    const data = pickText(["g","h","i","j"][Math.floor((elapsed - 240000) / 30000)]);
+                    title.innerText = data.title; sub.innerText = data.text;
+                    let deg = ((elapsed - 240000) % 30000 / 30000) * 360;
+                    pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+                    return;
                 }
-                if (activeSteps.includes('breathing')) {
-                    if (elapsed < (currentTime + 30) * 1000) {
-                        title.innerText = labels.prep_title || "..."; sub.innerText = labels.prep_sub || "...";
+                // 4. PREP & BREATHING
+                if (elapsed < 600000) {
+                    if (elapsed < 390000) {
+                        title.innerText = currentLabels.prep_title; sub.innerText = currentLabels.prep_sub;
                         pie.classList.add('hidden'); prep.classList.remove('hidden');
-                        prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
-                        return;
-                    }
-                    currentTime += 30;
-                    if (elapsed < (currentTime + 210) * 1000) {
+                        prep.innerText = Math.ceil((390000 - elapsed) / 1000);
+                    } else {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
                         document.getElementById('breathingArea').classList.remove('hidden');
-                        startBreathing(); return;
+                        startBreathing();
                     }
+                    return;
                 }
-                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinalMessage(); } else { location.reload(); }
-            }, 50);
+            }, 1000);
         }
 
-        function animateAgeCount(start, end, duration) {
-            const display = document.getElementById('dynamicAge'), badge = document.getElementById('ageDiffBadge');
-            let startTime = null;
-            function step(timestamp) {
-                if (!startTime) startTime = timestamp;
-                let progress = timestamp - startTime;
-                let current = Math.round(start - (progress / duration) * (start - end));
-                if (current < end) current = end;
-                display.innerText = current;
-                if (progress < duration) window.requestAnimationFrame(step);
-                else { 
-                    display.innerText = end; 
-                    const t = labels.badge_text || "Je traint op het niveau van iemand die {diff} jaar jonger is";
-                    badge.innerText = t.replace('{diff}', (start - end));
-                    badge.classList.add('show'); 
+        function animateAgeCount(s, e) {
+            let cur = s, step = (s - e) / 100, badge = document.getElementById('ageDiffBadge');
+            const int = setInterval(() => {
+                cur -= step; document.getElementById('dynamicAge').innerText = Math.round(cur);
+                if(cur <= e) { 
+                    clearInterval(int); document.getElementById('dynamicAge').innerText = e;
+                    badge.innerText = currentLabels.badge_text.replace('{diff}', (s-e));
+                    badge.classList.add('show');
                 }
-            }
-            window.requestAnimationFrame(step);
-        }
-
-        function updateCircleUI(data, ms) {
-            if(!data) return;
-            document.getElementById('mainTitle').innerText = data.title;
-            document.getElementById('mainSubContainer').innerText = data.text;
-            let deg = (ms / 30000) * 360;
-            document.getElementById('flowCircle').style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+            }, 100);
         }
 
         function startBreathing() {
             const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
             let step = 1, phase = 0, total = 210;
-            const phases = ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
-            bPie.style.background = "var(--light-gray)"; 
+            const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             const bInt = setInterval(() => {
                 bTitle.innerText = phases[phase]; bContent.innerText = step;
                 if (phase === 0) bPie.style.transform = "scale(1.4)";
@@ -301,24 +211,23 @@
                 if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
                 if (total-- <= 0) { 
                     clearInterval(bInt); 
-                    if(sessionData.steps.includes('end')) showFinalMessage(); else location.reload();
+                    if(sessionData.steps.includes('end')) showFinal(); else location.reload();
                 }
             }, 1000);
         }
 
-        function showFinalMessage() {
+        function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
-            const area = document.getElementById('actionArea'), title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer'), pie = document.getElementById('flowCircle'), content = document.getElementById('flowCircleContent');
-            area.classList.remove('hidden');
-            document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('prepCountdown').classList.add('hidden');
-            const t = labels.end_title || "Klaar voor de week, {user}!";
-            title.innerText = t.replace('{user}', sessionData.user);
-            sub.innerText = labels.end_sub || "...";
-            pie.className = "visual-circle"; pie.style.background = "var(--light-gray)"; pie.style.transform = "none";
-            content.innerText = "✓"; 
+            document.getElementById('mainTitle').innerText = currentLabels.end_title.replace('{user}', sessionData.user);
+            document.getElementById('mainSubContainer').innerText = currentLabels.end_sub;
+            const p = document.getElementById('flowCircle'); p.classList.remove('hidden'); p.className="visual-circle"; p.style.background="var(--light-gray)"; p.style.transform="none";
+            document.getElementById('flowCircleContent').innerText = "✓";
             setTimeout(() => location.reload(), 30000);
         }
+
+        loadData();
         setInterval(checkInbox, 3000);
     </script>
 </body>
