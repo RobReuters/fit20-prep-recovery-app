@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App v2.2</title>
+    <title>fit20 Trainer App v2.7</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
         body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); position: relative; }
@@ -13,7 +13,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         .col { background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; }
-        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 15px; margin-bottom: 10px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 15px; margin-bottom: 10px; }
         .option { display: flex; align-items: center; margin-bottom: 6px; cursor: pointer; font-size: 13px; }
         .option input { margin-right: 8px; width: 16px; height: 16px; accent-color: var(--fit20-green); }
         #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
@@ -21,23 +21,27 @@
     </style>
 </head>
 <body>
-<div class="version-tag">v2.2</div>
+<div class="version-tag">v2.7</div>
 <div class="container">
-    <h2>Recovery Control v2.2</h2>
+    <h2>Recovery Control v2.7</h2>
     <div class="grid">
         <div class="col">
             <label>Lid Naam:</label>
-            <input type="text" id="fname">
+            <input type="text" id="fname" placeholder="Naam...">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label>Kalender:</label><input type="number" id="calAge"></div>
                 <div><label>fit20 Age:</label><input type="number" id="fitAge"></div>
             </div>
+            <label>Taal / Language:</label>
+            <label class="option"><input type="radio" name="lang" value="nl" checked> Nederlands</label>
+            <label class="option"><input type="radio" name="lang" value="en"> English</label>
+        </div>
+        <div class="col">
             <label>Geslacht:</label>
             <label class="option"><input type="radio" name="gender" value="v" checked> Vrouw</label>
             <label class="option"><input type="radio" name="gender" value="m"> Man</label>
-        </div>
-        <div class="col">
-            <label>Hoofddoelen (max 2):</label>
+            
+            <label style="margin-top:15px;">Hoofddoelen (max 2):</label>
             <div id="profileGroup">
                 <label class="option"><input type="checkbox" value="kracht" checked> Kracht & Conditie</label>
                 <label class="option"><input type="checkbox" value="welzijn"> Lichaamsvorm & Welzijn</label>
@@ -50,33 +54,40 @@
             <div id="stepGroup">
                 <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery</label>
                 <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten</label>
-                <label class="option"><input type="checkbox" value="science" checked> Wetenschap (2m)</label>
-                <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling (4m)</label>
+                <label class="option"><input type="checkbox" value="science" checked> Wetenschap</label>
+                <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling</label>
                 <label class="option"><input type="checkbox" value="end" checked> Eindboodschap</label>
             </div>
         </div>
     </div>
-    <button id="sendBtn">START SESSIE</button>
+    <button id="sendBtn">START RECOVERY</button>
     <div id="status"></div>
 </div>
+
 <script>
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+
     document.getElementById('sendBtn').addEventListener('click', async () => {
-        const name = document.getElementById('fname').value;
+        const name = document.getElementById('fname').value.trim();
         const cal = document.getElementById('calAge').value;
         const fit = document.getElementById('fitAge').value;
-        if(!name || !cal || !fit) return alert("Vul alles in");
+        if(!name || !cal || !fit) return alert("Vul alle velden in");
+
+        const lang = document.querySelector('input[name="lang"]:checked').value;
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
         const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
+
+        document.getElementById('status').innerText = "Versturen...";
         try {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify({ user: name, calAge: cal, fitAge: fit, program: "recovery", genders: [gender], profiles: profiles, steps: steps })
+                body: JSON.stringify({ user: name, calAge: cal, fitAge: fit, lang: lang, genders: [gender], profiles: profiles, steps: steps, program: "recovery" })
             });
-            document.getElementById('status').innerText = "Verzonden!";
+            document.getElementById('status').innerText = "Verzonden! Start tablet.";
+            document.getElementById('status').style.color = "green";
         } catch (e) { document.getElementById('status').innerText = "Fout!"; }
     });
 </script>
