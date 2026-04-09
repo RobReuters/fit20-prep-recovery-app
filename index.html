@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v2.0</title>
+    <title>fit20 Recovery v2.1</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #005C9E; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,9 +22,9 @@
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
-        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; margin-bottom: 2vh; min-height: 3em; }
+        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* RESULTS AREA v2.0 */
+        /* RESULTS AREA */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         .age-badge { 
             background: var(--fit20-blue); color: white; width: 300px; height: 300px; 
@@ -34,11 +34,8 @@
             opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .age-badge.show { opacity: 1; transform: scale(1); }
-
         .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 10vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; width: 0%; transition: width 10s linear; }
-        
-        /* Cijfers hoger gezet */
         .age-display { position: absolute; top: -95px; display: flex; flex-direction: column; align-items: center; }
         .age-display .number { font-size: 5.5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
         .label-left { left: 0; transform: translateX(-5%); }
@@ -49,38 +46,30 @@
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
 
-        /* Box Breathing Layout */
         #boxBreathingLayout { display: flex; width: 100%; height: 100%; align-items: center; }
         .layout-left { flex: 2; display: flex; justify-content: center; }
         .layout-right { flex: 1; display: flex; justify-content: center; }
         .instruction-image { max-width: 95%; max-height: 48vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
         #prepCountdown { font-size: 15vw; font-weight: 800; color: var(--fit20-green); margin-top: -2vh; }
         #startActionBtn { padding: 3vh 6vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer; }
-        
         .hidden { display: none !important; }
         .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
-
-        /* Fix voor de Brackets / Distortion bij vinkje */
-        .end-circle { background: var(--light-gray) !important; transform: none !important; }
     </style>
 </head>
 <body>
-    <div id="vTag">v2.0</div>
-    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">10:00</span></div></div>
+    <div id="vTag">v2.1</div>
+    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Klaar voor je persoonlijke recovery programma? Druk op START.</p>
+        <p class="sub-text">Klaar voor je persoonlijke recovery programma? Druk op START.</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
     <div class="middle-section hidden" id="actionArea">
         <div class="instruction-title" id="mainTitle">...</div>
         <div id="mainSubContainer" class="sub-text">...</div>
-        
         <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
-
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge">...</div>
             <div class="meter-container">
@@ -96,9 +85,7 @@
         <div class="instruction-title" id="breathTitle">Adem in</div>
         <div id="boxBreathingLayout">
             <div class="layout-left"><img src="box-breathe-instructie.png" class="instruction-image"></div>
-            <div class="layout-right">
-                <div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div>
-            </div>
+            <div class="layout-right"><div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div></div>
         </div>
     </div>
 
@@ -112,7 +99,7 @@
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
 
-        let reservoir = [], sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 600, currentTimer = 600;
+        let reservoir = [], sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 0, currentTimer = 0;
 
         async function loadReservoir() {
             try {
@@ -137,9 +124,14 @@
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     
-                    // TIMING v2.0 (Exact 600s voor de 10-minuten timer)
-                    totalSeconds = 600;
-                    currentTimer = 600;
+                    // Bereken Dynamische Tijd v2.1
+                    let t = 0;
+                    if(sessionData.steps.includes('recovery')) t += 180;
+                    if(sessionData.steps.includes('results')) t += 60;
+                    if(sessionData.steps.includes('science')) t += 90;
+                    if(sessionData.steps.includes('breathing')) t += 270; // 30s prep + 4m box
+                    totalSeconds = t;
+                    currentTimer = t;
 
                     selectedTexts = ["a","b","c","d","e","f","g","h","i","j"].reduce((acc, cat) => { acc[cat] = pickText(cat); return acc; }, {});
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
@@ -165,10 +157,7 @@
                 let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
                 document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
                 document.getElementById('bar').style.width = `${((totalSeconds - currentTimer) / totalSeconds) * 100}%`;
-                if (currentTimer-- <= 0) { 
-                    clearInterval(tInt); 
-                    // Eind-toegift van 30 seconden start na de 10m timer
-                }
+                if (currentTimer-- <= 0) { clearInterval(tInt); }
             }, 1000);
             runMasterFlow();
         });
@@ -177,61 +166,71 @@
             const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
             const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), prep = document.getElementById('prepCountdown');
             let start = Date.now();
-            
+            let activeSteps = sessionData.steps;
+
             const masterInt = setInterval(() => {
                 let elapsed = Date.now() - start;
                 let currentTime = 0;
 
-                // 1. RECOVERY (0-3m)
-                if (elapsed < 180000) {
-                    pie.classList.remove('hidden'); results.classList.add('hidden');
-                    let ms = elapsed;
-                    updateCircleUI(selectedTexts[["a","b","c","d","e","f"][Math.floor(ms / 30000)]], ms % 30000);
-                    return;
-                }
-                currentTime = 180;
-
-                // 2. RESULTS (3-4m)
-                if (elapsed < 240000) {
-                    title.innerText = "Natuurlijke Verjonging";
-                    sub.innerText = "fit20 is de meest natuurlijke verjongingsprikkel die je jezelf kan geven!";
-                    pie.classList.add('hidden'); results.classList.remove('hidden');
-                    document.getElementById('valCal').innerText = sessionData.calAge;
-                    const targetFit = parseInt(sessionData.fitAge);
-                    const startCal = parseInt(sessionData.calAge);
-                    if (document.getElementById('meterFill').style.width !== "100%") {
-                        setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(startCal, targetFit, 10000); }, 500);
+                if (activeSteps.includes('recovery')) {
+                    if (elapsed < (currentTime + 180) * 1000) {
+                        pie.classList.remove('hidden'); results.classList.add('hidden');
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["a","b","c","d","e","f"][Math.floor(ms / 30000)]], ms % 30000);
+                        return;
                     }
-                    return;
+                    currentTime += 180;
                 }
-                currentTime = 240;
 
-                // 3. SCIENCE (4-5.5m)
-                if (elapsed < 330000) {
-                    results.classList.add('hidden'); pie.classList.remove('hidden');
-                    let ms = elapsed - 240000;
-                    updateCircleUI(selectedTexts[["g","h","i"][Math.floor(ms / 30000)]], ms % 30000);
-                    return;
+                if (activeSteps.includes('results')) {
+                    if (elapsed < (currentTime + 60) * 1000) {
+                        title.innerText = "Natuurlijke Verjonging";
+                        sub.innerText = "fit20 is de meest natuurlijke verjongingsprikkel die je jezelf kan geven!";
+                        pie.classList.add('hidden'); results.classList.remove('hidden');
+                        document.getElementById('valCal').innerText = sessionData.calAge;
+                        const targetFit = parseInt(sessionData.fitAge);
+                        const startCal = parseInt(sessionData.calAge);
+                        if (document.getElementById('meterFill').style.width !== "100%") {
+                            setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(startCal, targetFit, 10000); }, 500);
+                        }
+                        return;
+                    }
+                    currentTime += 60;
                 }
-                currentTime = 330;
 
-                // 4. BREATHING PREP (5.5m - 6m)
-                if (elapsed < 360000) {
-                    title.innerText = "Box Breathing: De 4-4-4-4 Methode"; 
-                    sub.innerHTML = "4s In (neus) • 4s Vast • 4s Uit (mond) • 4s Vast<br><span style='font-size:1.4vw; color:var(--fit20-blue); font-weight:bold;'>Verlaagt direct stress en optimaliseert je cel-herstel.</span>";
-                    pie.classList.add('hidden'); prep.classList.remove('hidden');
-                    prep.innerText = Math.ceil((360000 - elapsed) / 1000);
-                    return;
+                if (activeSteps.includes('science')) {
+                    if (elapsed < (currentTime + 90) * 1000) {
+                        results.classList.add('hidden'); pie.classList.remove('hidden');
+                        let ms = elapsed - (currentTime * 1000);
+                        updateCircleUI(selectedTexts[["g","h","i"][Math.floor(ms / 30000)]], ms % 30000);
+                        return;
+                    }
+                    currentTime += 90;
                 }
-                currentTime = 360;
 
-                // 5. BOX BREATHING (6m - 10m)
-                if (elapsed < 600000) {
+                if (activeSteps.includes('breathing')) {
+                    if (elapsed < (currentTime + 30) * 1000) {
+                        title.innerText = "Box Breathing: De 4-4-4-4 Methode"; 
+                        sub.innerHTML = "4s In (neus) • 4s Vast • 4s Uit (mond) • 4s Vast<br><span style='font-size:1.4vw; color:var(--fit20-blue); font-weight:bold;'>Verlaagt direct stress en optimaliseert je cel-herstel.</span>";
+                        pie.classList.add('hidden'); prep.classList.remove('hidden');
+                        prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
+                        return;
+                    }
+                    currentTime += 30;
+                    if (elapsed < (currentTime + 240) * 1000) {
+                        clearInterval(masterInt);
+                        document.getElementById('actionArea').classList.add('hidden');
+                        document.getElementById('breathingArea').classList.remove('hidden');
+                        startBreathing(); return;
+                    }
+                    currentTime += 240;
+                }
+
+                if (activeSteps.includes('end')) {
                     clearInterval(masterInt);
-                    document.getElementById('actionArea').classList.add('hidden');
-                    document.getElementById('breathingArea').classList.remove('hidden');
-                    startBreathing();
-                    return;
+                    showFinalMessage();
+                } else {
+                    location.reload();
                 }
             }, 50);
         }
@@ -262,46 +261,35 @@
 
         function startBreathing() {
             const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
-            let step = 1, phase = 0, total = 240; // 4 minuten box breathing
+            let step = 1, phase = 0, total = 240; 
             const phases = ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
-            
-            // RESET CIRKEL VOOR START
             bPie.style.background = "var(--light-gray)"; 
-            bContent.innerText = "";
-
             const bInt = setInterval(() => {
-                bTitle.innerText = phases[phase]; 
-                bContent.innerText = step;
+                bTitle.innerText = phases[phase]; bContent.innerText = step;
                 if (phase === 0) bPie.style.transform = "scale(1.4)";
                 if (phase === 2) bPie.style.transform = "scale(0.8)";
-                
-                if (total <= 6) { bArea.classList.add('soft-fade'); }
-
+                if (total <= 6) bArea.classList.add('soft-fade');
                 if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
                 if (total-- <= 0) { 
                     clearInterval(bInt); 
-                    showFinalMessage();
+                    if(sessionData.steps.includes('end')) showFinalMessage(); else location.reload();
                 }
             }, 1000);
         }
 
         function showFinalMessage() {
-            const area = document.getElementById('actionArea'), title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer'), pie = document.getElementById('flowCircle'), content = document.getElementById('flowCircleContent');
-            
             document.getElementById('breathingArea').classList.add('hidden');
+            const area = document.getElementById('actionArea'), title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer'), pie = document.getElementById('flowCircle'), content = document.getElementById('flowCircleContent');
             area.classList.remove('hidden');
+            document.getElementById('resultsArea').classList.add('hidden');
             document.getElementById('prepCountdown').classList.add('hidden');
-            
             title.innerText = `Klaar voor de week, ${sessionData.user}!`;
             sub.innerText = "Verlaat rustig de stoel. We zien je graag weer bij je volgende training. Geniet van je herstel!";
-            
-            // FIX: Perfecte cirkel voor vinkje
             pie.classList.remove('hidden');
-            pie.className = "visual-circle end-circle"; 
             pie.style.background = "var(--light-gray)";
+            pie.style.transform = "none";
             content.innerText = "✓"; 
-            
-            setTimeout(() => { location.reload(); }, 30000); // 30 seconden eindscherm
+            setTimeout(() => { location.reload(); }, 30000);
         }
 
         setInterval(checkInbox, 3000);
