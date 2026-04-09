@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v2.1</title>
+    <title>fit20 Recovery v2.2</title>
     <style>
-        :root { --fit20-green: #8BC63F; --fit20-blue: #005C9E; --antraciet: #333333; --light-gray: #f0f0f0; }
+        :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
@@ -27,7 +27,7 @@
         /* RESULTS AREA */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         .age-badge { 
-            background: var(--fit20-blue); color: white; width: 300px; height: 300px; 
+            background: var(--fit20-blue); color: white; width: 280px; height: 280px; 
             display: flex; align-items: center; justify-content: center;
             clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%);
             font-size: 1.8vw; font-weight: 800; line-height: 1.2; padding: 45px; text-align: center;
@@ -36,12 +36,12 @@
         .age-badge.show { opacity: 1; transform: scale(1); }
         .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 10vh 0 2vh 0; border: 3px solid white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; width: 0%; transition: width 10s linear; }
-        .age-display { position: absolute; top: -95px; display: flex; flex-direction: column; align-items: center; }
+        
+        .age-display { position: absolute; top: -105px; display: flex; flex-direction: column; align-items: center; }
         .age-display .number { font-size: 5.5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
         .label-left { left: 0; transform: translateX(-5%); }
         .label-right { right: 0; transform: translateX(5%); }
 
-        /* Cirkels */
         .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
@@ -50,19 +50,21 @@
         .layout-left { flex: 2; display: flex; justify-content: center; }
         .layout-right { flex: 1; display: flex; justify-content: center; }
         .instruction-image { max-width: 95%; max-height: 48vh; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
         #prepCountdown { font-size: 15vw; font-weight: 800; color: var(--fit20-green); margin-top: -2vh; }
         #startActionBtn { padding: 3vh 6vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer; }
+        
         .hidden { display: none !important; }
         .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
     </style>
 </head>
 <body>
-    <div id="vTag">v2.1</div>
+    <div id="vTag">v2.2</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p class="sub-text">Klaar voor je persoonlijke recovery programma? Druk op START.</p>
+        <p id="personalMsg" class="sub-text">Systeem gereed. Wachten op trainer...</p>
         <button id="startActionBtn" class="hidden">START</button>
     </div>
 
@@ -85,7 +87,9 @@
         <div class="instruction-title" id="breathTitle">Adem in</div>
         <div id="boxBreathingLayout">
             <div class="layout-left"><img src="box-breathe-instructie.png" class="instruction-image"></div>
-            <div class="layout-right"><div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div></div>
+            <div class="layout-right">
+                <div class="visual-circle" id="breathCircle"><div class="circle-number" id="breathCircleContent">1</div></div>
+            </div>
         </div>
     </div>
 
@@ -99,7 +103,7 @@
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?gid=0&single=true&output=csv';
 
-        let reservoir = [], sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 0, currentTimer = 0;
+        let reservoir = [], sessionData = {}, selectedTexts = {}, isSessionActive = false, totalSeconds = 600, currentTimer = 600;
 
         async function loadReservoir() {
             try {
@@ -122,16 +126,16 @@
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
                     document.getElementById('userName').innerText = "Hallo " + sessionData.user;
+                    // FIX: Tekst pas hier aanpassen
+                    document.getElementById('personalMsg').innerText = "Klaar voor je persoonlijke recovery programma? Druk op START.";
                     document.getElementById('startActionBtn').classList.remove('hidden');
                     
-                    // Bereken Dynamische Tijd v2.1
                     let t = 0;
                     if(sessionData.steps.includes('recovery')) t += 180;
                     if(sessionData.steps.includes('results')) t += 60;
-                    if(sessionData.steps.includes('science')) t += 90;
-                    if(sessionData.steps.includes('breathing')) t += 270; // 30s prep + 4m box
-                    totalSeconds = t;
-                    currentTimer = t;
+                    if(sessionData.steps.includes('science')) t += 120; // Nu 2 min voor g,h,i,j
+                    if(sessionData.steps.includes('breathing')) t += 240; // 30s prep + 3.5m box
+                    totalSeconds = t; currentTimer = t;
 
                     selectedTexts = ["a","b","c","d","e","f","g","h","i","j"].reduce((acc, cat) => { acc[cat] = pickText(cat); return acc; }, {});
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
@@ -199,39 +203,33 @@
                 }
 
                 if (activeSteps.includes('science')) {
-                    if (elapsed < (currentTime + 90) * 1000) {
+                    if (elapsed < (currentTime + 120) * 1000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden');
                         let ms = elapsed - (currentTime * 1000);
-                        updateCircleUI(selectedTexts[["g","h","i"][Math.floor(ms / 30000)]], ms % 30000);
+                        updateCircleUI(selectedTexts[["g","h","i","j"][Math.floor(ms / 30000)]], ms % 30000);
                         return;
                     }
-                    currentTime += 90;
+                    currentTime += 120;
                 }
 
                 if (activeSteps.includes('breathing')) {
                     if (elapsed < (currentTime + 30) * 1000) {
-                        title.innerText = "Box Breathing: De 4-4-4-4 Methode"; 
-                        sub.innerHTML = "4s In (neus) • 4s Vast • 4s Uit (mond) • 4s Vast<br><span style='font-size:1.4vw; color:var(--fit20-blue); font-weight:bold;'>Verlaagt direct stress en optimaliseert je cel-herstel.</span>";
+                        title.innerText = "Voorbereiding: Box Breathing"; 
+                        sub.innerHTML = "<span style='color:var(--fit20-blue); font-weight:bold;'>Breng je ademhaling nu zelfstandig tot rust.</span><br>Adem 4s in (neus) • 4s vast • 4s uit (mond) • 4s vast.<br><span style='font-size:1.4vw; color:#666;'>Dit systeem schakelt je zenuwstelsel direct naar de herstel-modus.</span>";
                         pie.classList.add('hidden'); prep.classList.remove('hidden');
                         prep.innerText = Math.ceil(((currentTime + 30) * 1000 - elapsed) / 1000);
                         return;
                     }
                     currentTime += 30;
-                    if (elapsed < (currentTime + 240) * 1000) {
+                    if (elapsed < (currentTime + 210) * 1000) {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
                         document.getElementById('breathingArea').classList.remove('hidden');
                         startBreathing(); return;
                     }
-                    currentTime += 240;
                 }
 
-                if (activeSteps.includes('end')) {
-                    clearInterval(masterInt);
-                    showFinalMessage();
-                } else {
-                    location.reload();
-                }
+                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinalMessage(); } else { location.reload(); }
             }, 50);
         }
 
@@ -261,7 +259,7 @@
 
         function startBreathing() {
             const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
-            let step = 1, phase = 0, total = 240; 
+            let step = 1, phase = 0, total = 210; // 3.5 minuten
             const phases = ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             bPie.style.background = "var(--light-gray)"; 
             const bInt = setInterval(() => {
@@ -285,13 +283,12 @@
             document.getElementById('prepCountdown').classList.add('hidden');
             title.innerText = `Klaar voor de week, ${sessionData.user}!`;
             sub.innerText = "Verlaat rustig de stoel. We zien je graag weer bij je volgende training. Geniet van je herstel!";
-            pie.classList.remove('hidden');
+            pie.className = "visual-circle"; 
             pie.style.background = "var(--light-gray)";
             pie.style.transform = "none";
             content.innerText = "✓"; 
             setTimeout(() => { location.reload(); }, 30000);
         }
-
         setInterval(checkInbox, 3000);
     </script>
 </body>
