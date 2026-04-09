@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App v2.0</title>
+    <title>fit20 Trainer App v2.1</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
         body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); position: relative; }
@@ -21,9 +21,9 @@
     </style>
 </head>
 <body>
-<div class="version-tag">v2.0</div>
+<div class="version-tag">v2.1</div>
 <div class="container">
-    <h2>Recovery Control v2.0</h2>
+    <h2>Recovery Control v2.1</h2>
     <div class="grid">
         <div class="col">
             <label>Lid Naam:</label>
@@ -46,14 +46,13 @@
             </div>
         </div>
         <div class="col">
-            <label>Programma-instelling:</label>
-            <p style="font-size:12px; color:#666; margin-bottom:10px;">V2.0 gebruikt de vaste 10-minuten cyclus.</p>
-            <div id="stepGroup" style="opacity:0.5; pointer-events:none;">
-                <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery</label>
-                <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten</label>
-                <label class="option"><input type="checkbox" value="science" checked> Wetenschap</label>
-                <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling</label>
-                <label class="option"><input type="checkbox" value="end" checked> Eindboodschap</label>
+            <label>Programma Onderdelen:</label>
+            <div id="stepGroup">
+                <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery (3m)</label>
+                <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten (1m)</label>
+                <label class="option"><input type="checkbox" value="science" checked> Wetenschap (1.5m)</label>
+                <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling (4.5m)</label>
+                <label class="option"><input type="checkbox" value="end" checked> Eindboodschap (30s)</label>
             </div>
         </div>
     </div>
@@ -63,21 +62,35 @@
 <script>
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
+    
+    // Max 2 doelen
+    document.querySelectorAll('#profileGroup input').forEach(cb => {
+        cb.addEventListener('change', () => {
+            if(document.querySelectorAll('#profileGroup input:checked').length > 2) cb.checked = false;
+        });
+    });
+
     document.getElementById('sendBtn').addEventListener('click', async () => {
         const name = document.getElementById('fname').value;
         const cal = document.getElementById('calAge').value;
         const fit = document.getElementById('fitAge').value;
-        if(!name || !cal || !fit) return alert("Vul alles in");
+        if(!name || !cal || !fit) return alert("Vul alle velden in");
+
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
-        const steps = ["recovery","results","science","breathing","end"]; // Vaste 10m flow
+        const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
+
+        if(steps.length === 0) return alert("Selecteer minimaal één onderdeel");
+
+        document.getElementById('status').innerText = "Versturen...";
         try {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                 body: JSON.stringify({ user: name, calAge: cal, fitAge: fit, program: "recovery", genders: [gender], profiles: profiles, steps: steps })
             });
-            document.getElementById('status').innerText = "Verzonden!";
+            document.getElementById('status').innerText = "Verzonden! Start de tablet.";
+            document.getElementById('status').style.color = "green";
         } catch (e) { document.getElementById('status').innerText = "Fout!"; }
     });
 </script>
