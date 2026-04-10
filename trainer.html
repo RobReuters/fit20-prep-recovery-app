@@ -3,54 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App v2.7</title>
+    <title>fit20 Trainer App v2.9</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
-        body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); position: relative; }
-        .version-tag { position: absolute; bottom: 10px; right: 10px; font-size: 10px; color: #bbb; }
+        body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); }
         .container { background: white; padding: 20px; border-radius: 15px; max-width: 900px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: var(--fit20-green); text-align: center; margin-bottom: 20px; }
+        h2 { color: var(--fit20-green); text-align: center; }
         .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         .col { background: #fafafa; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 15px; margin-bottom: 10px; }
-        .option { display: flex; align-items: center; margin-bottom: 6px; cursor: pointer; font-size: 13px; }
-        .option input { margin-right: 8px; width: 16px; height: 16px; accent-color: var(--fit20-green); }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; }
+        .option { display: flex; align-items: center; margin-bottom: 6px; font-size: 13px; cursor: pointer; }
+        .option input { width: auto; margin-right: 8px; }
         #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        #status { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="version-tag">v2.7</div>
 <div class="container">
-    <h2>Recovery Control v2.7</h2>
+    <h2>Recovery Control v2.9</h2>
     <div class="grid">
         <div class="col">
             <label>Lid Naam:</label>
-            <input type="text" id="fname" placeholder="Naam...">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Kalender:</label><input type="number" id="calAge"></div>
-                <div><label>fit20 Age:</label><input type="number" id="fitAge"></div>
-            </div>
-            <label>Taal / Language:</label>
-            <label class="option"><input type="radio" name="lang" value="nl" checked> Nederlands</label>
-            <label class="option"><input type="radio" name="lang" value="en"> English</label>
+            <input type="text" id="fname">
+            <label>Kalenderleeftijd:</label>
+            <input type="number" id="calAge">
+            <label>fit20 Age:</label>
+            <input type="number" id="fitAge">
+            <label>Totaal aantal sessies:</label>
+            <input type="number" id="totalSessions">
         </div>
         <div class="col">
+            <label>Taal:</label>
+            <label class="option"><input type="radio" name="lang" value="nl" checked> NL</label>
+            <label class="option"><input type="radio" name="lang" value="en"> EN</label>
             <label>Geslacht:</label>
             <label class="option"><input type="radio" name="gender" value="v" checked> Vrouw</label>
             <label class="option"><input type="radio" name="gender" value="m"> Man</label>
-            
-            <label style="margin-top:15px;">Hoofddoelen (max 2):</label>
-            <div id="profileGroup">
-                <label class="option"><input type="checkbox" value="kracht" checked> Kracht & Conditie</label>
-                <label class="option"><input type="checkbox" value="welzijn"> Lichaamsvorm & Welzijn</label>
-                <label class="option"><input type="checkbox" value="pijn"> Pijn- & Klachtreductie</label>
-                <label class="option"><input type="checkbox" value="mobiliteit"> Functionele mobiliteit</label>
-            </div>
         </div>
         <div class="col">
-            <label>Programma Onderdelen:</label>
+            <label>Programma:</label>
             <div id="stepGroup">
                 <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery</label>
                 <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten</label>
@@ -61,22 +52,20 @@
         </div>
     </div>
     <button id="sendBtn">START RECOVERY</button>
-    <div id="status"></div>
+    <div id="status" style="text-align:center; margin-top:10px; font-weight:bold;"></div>
 </div>
-
 <script>
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
-
     document.getElementById('sendBtn').addEventListener('click', async () => {
-        const name = document.getElementById('fname').value.trim();
+        const name = document.getElementById('fname').value;
         const cal = document.getElementById('calAge').value;
         const fit = document.getElementById('fitAge').value;
-        if(!name || !cal || !fit) return alert("Vul alle velden in");
+        const sessions = document.getElementById('totalSessions').value;
+        if(!name || !cal || !fit || !sessions) return alert("Vul alles in");
 
         const lang = document.querySelector('input[name="lang"]:checked').value;
         const gender = document.querySelector('input[name="gender"]:checked').value;
-        const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
         const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
 
         document.getElementById('status').innerText = "Versturen...";
@@ -84,10 +73,9 @@
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify({ user: name, calAge: cal, fitAge: fit, lang: lang, genders: [gender], profiles: profiles, steps: steps, program: "recovery" })
+                body: JSON.stringify({ user: name, calAge: cal, fitAge: fit, totalSessions: sessions, lang: lang, genders: [gender], profiles: ["kracht"], steps: steps, program: "recovery" })
             });
-            document.getElementById('status').innerText = "Verzonden! Start tablet.";
-            document.getElementById('status').style.color = "green";
+            document.getElementById('status').innerText = "Verzonden!";
         } catch (e) { document.getElementById('status').innerText = "Fout!"; }
     });
 </script>
