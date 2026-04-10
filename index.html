@@ -4,56 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v3.1</title>
+    <title>fit20 Recovery v3.2</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
         #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #888; z-index: 1000; }
+        .logo { position: fixed; bottom: 4vh; right: 4vw; width: 20vw; max-width: 220px; z-index: 1000; }
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
         .middle-section { height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5vw; text-align: center; }
         .bottom-section { height: 20vh; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
-        .logo { position: fixed; bottom: 4vh; right: 4vw; width: 20vw; max-width: 220px; z-index: 1000; }
-        
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
 
-        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; min-height: 1.2em; }
-        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; margin-bottom: 2vh; }
+        .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
+        .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE */
-        #timelineArea { width: 90vw; height: 350px; position: relative; overflow: hidden; display: flex; align-items: center; background: #fdfdfd; border-radius: 20px; margin: 2vh 0; }
-        .timeline-track { position: absolute; height: 8px; background: #eee; left: 0; top: 50%; width: 5000px; transition: transform 15s cubic-bezier(0.2, 0, 0.2, 1); display: flex; align-items: center; }
+        /* TIMELINE v3.2 */
+        #timelineArea { width: 100vw; height: 400px; position: relative; overflow: hidden; display: flex; align-items: center; }
+        .timeline-track { position: absolute; height: 8px; background: #eee; left: 50%; display: flex; align-items: center; transition: none; }
         .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); top: 0; }
-        .milestone-dot { width: 24px; height: 24px; background: #ddd; border-radius: 50%; border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .milestone-dot { width: 20px; height: 20px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
-        .milestone-label { font-size: 1.1vw; font-weight: bold; color: #aaa; white-space: nowrap; position: absolute; top: 35px; }
+        .milestone-label { font-size: 1vw; font-weight: bold; color: #bbb; white-space: nowrap; position: absolute; top: 30px; }
         .milestone.reached .milestone-label { color: var(--antraciet); }
-        .milestone-count { font-size: 0.9vw; color: #ccc; position: absolute; top: -30px; }
-        .current-marker { position: fixed; left: 50%; top: 55%; width: 80px; height: 80px; background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; border: 6px solid white; box-shadow: 0 10px 25px rgba(0,157,244,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .marker-val { font-size: 2.2vw; font-weight: 900; line-height: 1; }
-        .marker-label { font-size: 0.8vw; font-weight: bold; opacity: 0.8; }
+        .milestone-count { font-size: 0.8vw; color: #ccc; position: absolute; top: -25px; font-weight: bold; }
 
-        /* RESULTS */
+        /* De Stilstaande Marker in het midden */
+        .current-marker { 
+            position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; 
+            background: var(--fit20-blue); border-radius: 50%; 
+            transform: translate(-50%, -50%); z-index: 100; 
+            border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .marker-val { font-size: 2.8vw; font-weight: 900; line-height: 1; }
+        .marker-label { font-size: 0.9vw; font-weight: bold; opacity: 0.9; }
+
+        /* REVEAL EFFECT */
+        .reveal-active .current-marker { width: 220px; height: 220px; }
+        .reveal-active .marker-val { font-size: 5vw; }
+        .milestone-title-big { 
+            position: absolute; bottom: -120px; font-size: 3.5vw; font-weight: 900; 
+            color: var(--fit20-blue); opacity: 0; transform: translateY(20px); transition: all 0.8s;
+        }
+        .reveal-active .milestone-title-big { opacity: 1; transform: translateY(0); }
+
+        /* VUURWERK (CSS particles) */
+        .firework { position: absolute; width: 5px; height: 5px; border-radius: 50%; opacity: 0; }
+        @keyframes explode {
+            0% { transform: translate(0,0); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+        }
+
+        /* OVERIGE */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .age-badge.show { opacity: 1; transform: scale(1); }
-        .meter-container { width: 100%; height: 44px; background: #eee; border-radius: 22px; position: relative; margin: 10vh 0 2vh 0; border: 3px solid white; }
-        .meter-fill { height: 100%; background: var(--fit20-green); border-radius: 22px; position: absolute; top: 0; right: 0; width: 0%; transition: width 8s linear; }
-        .age-display { position: absolute; top: -105px; display: flex; flex-direction: column; align-items: center; }
-        .age-display .number { font-size: 5.5vw; font-weight: 900; color: var(--fit20-green); line-height: 1; }
-
-        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: transform 4s ease-in-out; background: var(--light-gray); }
+        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
+        .hidden { display: none !important; }
+        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
-        .hidden { display: none !important; }
-        .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
     </style>
 </head>
 <body>
-    <div id="vTag">v3.1</div>
+    <div id="vTag">v3.2</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -68,19 +86,26 @@
         
         <div id="timelineArea" class="hidden">
             <div class="timeline-track" id="timelineTrack"></div>
-            <div class="current-marker" id="userMarker"><span id="markerNum" class="marker-val">0</span><span class="marker-label">Sessies</span></div>
-        </div>
-
-        <div id="placeholderArea" class="hidden">
-            <div class="visual-circle" style="background:var(--light-gray)"><div class="circle-number" style="font-size:40px">...</div></div>
+            <div class="current-marker" id="userMarker">
+                <span id="markerNum" class="marker-val">0</span>
+                <span id="markerLab" class="marker-label">Sessies</span>
+                <div id="bigMilestoneLabel" class="milestone-title-big">...</div>
+            </div>
+            <div id="fireworkContainer"></div>
         </div>
 
         <div id="resultsArea" class="hidden">
             <div class="age-badge" id="ageDiffBadge"></div>
-            <div class="meter-container">
-                <div class="age-display" style="left:0;"><span id="labelFit" style="font-size:1.2vw; color:#999; font-weight:bold;">fit20 Age</span><br><span id="dynamicAge" class="number">0</span></div>
-                <div class="age-display" style="right:0;"><span id="labelCal" style="font-size:1.2vw; color:#999; font-weight:bold;">Kalender</span><br><span id="valCal" class="number">0</span></div>
-                <div class="meter-fill" id="meterFill"></div>
+            <div class="meter-container" style="width:100%; height:44px; background:#eee; border-radius:22px; position:relative; margin:10vh 0 2vh 0; border:3px solid white;">
+                <div style="position:absolute; top:-105px; left:0; display:flex; flex-direction:column; align-items:center;">
+                    <span style="font-size:1.2vw; color:#999; font-weight:bold;">fit20 Age</span><br>
+                    <span id="dynamicAge" style="font-size:5.5vw; font-weight:900; color:var(--fit20-green); line-height:1;">0</span>
+                </div>
+                <div style="position:absolute; top:-105px; right:0; display:flex; flex-direction:column; align-items:center;">
+                    <span id="labelCal" style="font-size:1.2vw; color:#999; font-weight:bold;">Kalender</span><br>
+                    <span id="valCal" style="font-size:5.5vw; font-weight:900; color:var(--fit20-green); line-height:1;">0</span>
+                </div>
+                <div id="meterFill" style="height:100%; background:var(--fit20-green); border-radius:22px; position:absolute; top:0; right:0; width:0%; transition:width 8s linear;"></div>
             </div>
         </div>
 
@@ -119,9 +144,9 @@
                 const [resC, resL, resM] = await Promise.all([fetch(CONTENT_URL+'&t='+Date.now()), fetch(LABELS_URL+'&t='+Date.now()), fetch(MILESTONES_URL+'&t='+Date.now())]);
                 reservoir = parseCSV(await resC.text());
                 labelsRaw = parseCSV(await resL.text());
-                milestoneData = parseCSV(await resM.text());
+                milestoneData = parseCSV(await resM.text()).sort((a,b) => parseInt(a[0]) - parseInt(b[0]));
                 updateUILanguage();
-            } catch (e) { document.getElementById('personalMsg').innerText = "Fout bij laden."; }
+            } catch (e) { console.error(e); }
         }
 
         function updateUILanguage() {
@@ -129,7 +154,8 @@
             labelsRaw.forEach(row => { if(row[0]) currentLabels[row[0]] = row[langIdx]; });
             document.getElementById('personalMsg').innerText = currentLabels.setup_msg || "Systeem gereed...";
             document.getElementById('startActionBtn').innerText = currentLabels.start_btn || "START";
-            document.querySelector('.marker-label').innerText = sessionData.lang === 'en' ? "Sessions" : "Sessies";
+            document.getElementById('markerLab').innerText = sessionData.lang === 'en' ? "Sessions" : "Sessies";
+            document.getElementById('labelCal').innerText = sessionData.lang === 'en' ? "Calendar" : "Kalender";
         }
 
         async function checkInbox() {
@@ -150,184 +176,4 @@
         }
 
         function pickStaticText(cat) {
-            const langIdx = sessionData.lang === 'en' ? [5, 6] : [3, 4];
-            const matches = reservoir.filter(t => t[0] === cat && (t[1] === "both" || t[1] === sessionData.genders[0]) && (t[2] === "all" || sessionData.profiles.includes(t[2])));
-            const pick = matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t[0] === cat);
-            return pick ? { title: pick[langIdx[0]], text: pick[langIdx[1]] } : { title: "", text: "" };
-        }
-
-        document.getElementById('startActionBtn').addEventListener('click', function() {
-            isSessionActive = true;
-            document.getElementById('setupArea').classList.add('hidden');
-            document.getElementById('actionArea').classList.remove('hidden');
-            document.getElementById('overallTimer').classList.remove('hidden');
-            document.getElementById('vTag').style.display = 'none';
-            runMasterFlow();
-        });
-
-        function runMasterFlow() {
-            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
-            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), timeline = document.getElementById('timelineArea'), placeholder = document.getElementById('placeholderArea'), prep = document.getElementById('prepCountdown');
-            let start = Date.now(), activeSteps = sessionData.steps;
-
-            // Bereken totale tijd van actieve stappen
-            let totalTime = 0;
-            if(activeSteps.includes('recovery')) totalTime += 180;
-            if(activeSteps.includes('results')) totalTime += 60;
-            if(activeSteps.includes('science')) totalTime += 120;
-            if(activeSteps.includes('breathing')) totalTime += 240;
-            let currentTimer = totalTime;
-
-            const tInt = setInterval(() => {
-                let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
-                document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                document.getElementById('bar').style.width = `${((totalTime - currentTimer) / totalTime) * 100}%`;
-                if (currentTimer-- <= 0) clearInterval(tInt);
-            }, 1000);
-
-            const masterInt = setInterval(() => {
-                let elapsed = Date.now() - start;
-                let stepStart = 0;
-
-                // 1. RECOVERY
-                if (activeSteps.includes('recovery')) {
-                    if (elapsed < (stepStart + 180) * 1000) {
-                        pie.classList.remove('hidden'); results.classList.add('hidden'); timeline.classList.add('hidden');
-                        const cat = ["a","b","c","d","e","f"][Math.floor((elapsed - stepStart * 1000) / 30000)];
-                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
-                        let deg = ((elapsed % 30000) / 30000) * 360;
-                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
-                        return;
-                    }
-                    stepStart += 180;
-                }
-
-                // 2. JOUW RESULTATEN
-                if (activeSteps.includes('results')) {
-                    let resElapsed = elapsed - (stepStart * 1000);
-                    if (resElapsed < 60000) {
-                        pie.classList.add('hidden');
-                        if (resElapsed < 20000) {
-                            title.innerText = sessionData.lang === 'en' ? "Your fit20 Journey" : "Jouw fit20 Reis";
-                            sub.innerText = sessionData.lang === 'en' ? "Consistency is the key to strength." : "Consistentie is de sleutel tot kracht.";
-                            timeline.classList.remove('hidden');
-                            if (!timeline.dataset.started) { startTimeline(parseInt(sessionData.totalSessions || 0)); timeline.dataset.started = "true"; }
-                        } else if (resElapsed < 40000) {
-                            timeline.classList.add('hidden'); placeholder.classList.remove('hidden');
-                            title.innerText = sessionData.lang === 'en' ? "Focus on Vitality" : "Focus op Vitaliteit";
-                            sub.innerText = sessionData.lang === 'en' ? "Your effort today is your win tomorrow." : "Jouw inzet van vandaag is de winst van morgen.";
-                        } else {
-                            placeholder.classList.add('hidden'); results.classList.remove('hidden');
-                            title.innerText = currentLabels.results_title; sub.innerText = currentLabels.results_sub;
-                            document.getElementById('valCal').innerText = sessionData.calAge;
-                            if (document.getElementById('meterFill').style.width !== "100%") {
-                                setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge)); }, 100);
-                            }
-                        }
-                        return;
-                    }
-                    stepStart += 60;
-                }
-
-                // 3. SCIENCE
-                if (activeSteps.includes('science')) {
-                    let sciElapsed = elapsed - (stepStart * 1000);
-                    if (sciElapsed < 120000) {
-                        results.classList.add('hidden'); pie.classList.remove('hidden');
-                        const cat = ["g","h","i","j"][Math.floor(sciElapsed / 30000)];
-                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
-                        let deg = (sciElapsed % 30000 / 30000) * 360;
-                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
-                        return;
-                    }
-                    stepStart += 120;
-                }
-                
-                // 4. PREP & BREATHING
-                if (activeSteps.includes('breathing')) {
-                    let breathElapsed = elapsed - (stepStart * 1000);
-                    if (breathElapsed < 30000) {
-                        title.innerText = currentLabels.prep_title; sub.innerText = currentLabels.prep_sub;
-                        pie.classList.add('hidden'); prep.classList.remove('hidden');
-                        prep.innerText = Math.ceil((30000 - breathElapsed) / 1000);
-                        return;
-                    } else if (breathElapsed < 240000) {
-                        clearInterval(masterInt);
-                        document.getElementById('actionArea').classList.add('hidden');
-                        document.getElementById('breathingArea').classList.remove('hidden');
-                        startBreathing();
-                        return;
-                    }
-                    stepStart += 240;
-                }
-                
-                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinal(); } else { location.reload(); }
-            }, 500);
-        }
-
-        function startTimeline(total) {
-            const track = document.getElementById('timelineTrack'), markerNum = document.getElementById('markerNum'), langIdx = sessionData.lang === 'en' ? 2 : 1;
-            const spacing = 250;
-            track.innerHTML = "";
-            milestoneData.forEach((ms, index) => {
-                let div = document.createElement('div');
-                div.className = "milestone " + (total >= parseInt(ms[0]) ? "reached" : "");
-                div.style.left = (index * spacing + 500) + "px";
-                div.innerHTML = `<div class="milestone-count">${ms[0]}</div><div class="milestone-dot"></div><div class="milestone-label">${ms[langIdx]}</div>`;
-                track.appendChild(div);
-            });
-            let cur = 0; const duration = 15000, startTime = Date.now();
-            const anim = setInterval(() => {
-                let progress = Math.min((Date.now() - startTime) / duration, 1);
-                let currentVal = Math.round(progress * total);
-                markerNum.innerText = currentVal;
-                let targetX = 0;
-                milestoneData.forEach((ms, index) => { if (currentVal >= parseInt(ms[0])) targetX = index * spacing; });
-                track.style.transform = `translateX(-${targetX}px)`;
-                if (progress >= 1) clearInterval(anim);
-            }, 50);
-        }
-
-        function animateAgeCount(s, e) {
-            let cur = s;
-            const int = setInterval(() => {
-                cur -= (s-e)/100; document.getElementById('dynamicAge').innerText = Math.round(cur);
-                if(cur <= e) { 
-                    clearInterval(int); document.getElementById('dynamicAge').innerText = e;
-                    document.getElementById('ageDiffBadge').innerText = currentLabels.badge_text.replace('{diff}', (s-e));
-                    document.getElementById('ageDiffBadge').classList.add('show');
-                }
-            }, 80);
-        }
-
-        function startBreathing() {
-            const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
-            let step = 1, phase = 0, total = 210;
-            const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
-            const bInt = setInterval(() => {
-                bTitle.innerText = phases[phase]; bContent.innerText = step;
-                if (phase === 0) bPie.style.transform = "scale(1.4)";
-                if (phase === 2) bPie.style.transform = "scale(0.8)";
-                if (total <= 6) bArea.classList.add('soft-fade');
-                if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
-                if (total-- <= 0) { clearInterval(bInt); if(sessionData.steps.includes('end')) showFinal(); else location.reload(); }
-            }, 1000);
-        }
-
-        function showFinal() {
-            document.getElementById('breathingArea').classList.add('hidden');
-            const area = document.getElementById('actionArea');
-            area.classList.remove('hidden');
-            document.getElementById('resultsArea').classList.add('hidden');
-            document.getElementById('mainTitle').innerText = currentLabels.end_title.replace('{user}', sessionData.user);
-            document.getElementById('mainSubContainer').innerText = currentLabels.end_sub;
-            const p = document.getElementById('flowCircle'); p.classList.remove('hidden'); p.className="visual-circle"; p.style.background="var(--light-gray)"; p.style.transform="none";
-            document.getElementById('flowCircleContent').innerText = "✓";
-            setTimeout(() => location.reload(), 30000);
-        }
-
-        loadData();
-        setInterval(checkInbox, 3000);
-    </script>
-</body>
-</html>
+            const langIdx = sessionData.lang === 'en'
