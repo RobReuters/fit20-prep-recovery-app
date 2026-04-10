@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v3.9</title>
+    <title>fit20 Recovery v4.0</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,19 +23,15 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE v3.9 - DE WEG */
+        /* TIMELINE v4.0 */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
-        
-        /* De bewegende container voor de weg, stippen en labels */
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         
-        /* De basislijn (grijs) */
         .road-base { position: absolute; height: 10px; background: #eee; left: 0; width: 100%; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 1; }
-        /* De afgelegde weg (groen) - zit binnen de bewegende track */
         .road-progress { position: absolute; height: 10px; background: var(--fit20-green); left: 0; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
         
         .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; z-index: 10; }
-        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); transition: background 0.3s; }
+        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
         
         .milestone-label { font-size: 1.1vw; font-weight: bold; color: #bbb; white-space: nowrap; margin-top: 25px; transition: all 0.3s ease; }
@@ -43,7 +39,7 @@
         .milestone.reached:not(.active-pop) .milestone-label { color: var(--antraciet); }
         .milestone-count { font-size: 0.8vw; color: #ccc; margin-bottom: 25px; font-weight: bold; transform: translateY(-10px); }
 
-        /* De Zwevende Marker (Counter) */
+        /* De Zwevende Marker */
         .current-marker { 
             position: absolute; left: 50%; top: 35%; width: 110px; height: 110px; 
             background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; 
@@ -60,13 +56,7 @@
         .reveal-active .current-marker { width: 230px; height: 230px; top: 40%; }
         .reveal-active .current-marker::after { display: none; }
         .reveal-active .marker-val { font-size: 7vw; }
-        
-        /* Grote Milestone Titel - Lager geplaatst tegen overlap */
-        .milestone-title-big { 
-            position: absolute; width: 100%; top: 80%; left: 0; font-size: 4.5vw; font-weight: 900; 
-            color: var(--fit20-blue); opacity: 0; transform: translateY(30px); transition: all 1s ease-out; 
-            text-align: center; z-index: 110; 
-        }
+        .milestone-title-big { position: absolute; width: 100%; top: 80%; left: 0; font-size: 4.5vw; font-weight: 900; color: var(--fit20-blue); opacity: 0; transform: translateY(30px); transition: all 1s ease-out; text-align: center; z-index: 110; }
         .reveal-active .milestone-title-big { opacity: 1; transform: translateY(0); }
 
         .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0; pointer-events: none; }
@@ -77,14 +67,14 @@
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
     </style>
- head>
+</head>
 <body>
-    <div id="vTag">v3.9</div>
+    <div id="vTag">v4.0</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Laden...</p>
+        <p id="personalMsg" class="sub-text">Initialiseren...</p>
         <button id="startActionBtn" class="hidden" style="padding: 3vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer;">START</button>
     </div>
 
@@ -97,7 +87,6 @@
                 <div class="road-base"></div>
                 <div class="road-progress" id="roadFill"></div>
             </div>
-            
             <div class="current-marker" id="userMarker">
                 <span id="markerNum" class="marker-val">0</span>
                 <span id="markerLab" class="marker-label">Sessies</span>
@@ -152,22 +141,31 @@
         }
 
         async function loadData() {
+            const msg = document.getElementById('personalMsg');
             try {
-                const [resC, resL, resM] = await Promise.all([fetch(CONTENT_URL+'&t='+Date.now()), fetch(LABELS_URL+'&t='+Date.now()), fetch(MILESTONES_URL+'&t='+Date.now())]);
+                msg.innerText = "Laden content...";
+                const resC = await fetch(CONTENT_URL+'&t='+Date.now());
                 reservoir = parseCSV(await resC.text());
+
+                msg.innerText = "Laden labels...";
+                const resL = await fetch(LABELS_URL+'&t='+Date.now());
                 labelsRaw = parseCSV(await resL.text());
+
+                msg.innerText = "Laden mijlpalen...";
+                const resM = await fetch(MILESTONES_URL+'&t='+Date.now());
                 milestoneDataRaw = parseCSV(await resM.text());
+
                 updateUILanguage();
-            } catch (e) { console.error(e); }
+            } catch (e) { msg.innerHTML = "<span style='color:red'>Laden mislukt. Check Sheet publicatie.</span>"; }
         }
 
         function updateUILanguage() {
             const langIdx = sessionData.lang === 'en' ? 2 : 1;
             labelsRaw.forEach(row => { if(row[0]) currentLabels[row[0]] = row[langIdx]; });
-            if (document.getElementById('personalMsg')) document.getElementById('personalMsg').innerText = currentLabels.setup_msg || "Systeem gereed...";
+            if (document.getElementById('personalMsg')) document.getElementById('personalMsg').innerText = currentLabels.setup_msg || "Wachten op trainer...";
             if (document.getElementById('startActionBtn')) document.getElementById('startActionBtn').innerText = currentLabels.start_btn || "START";
             if (document.getElementById('markerLab')) document.getElementById('markerLab').innerText = sessionData.lang === 'en' ? "Sessions" : "Sessies";
-            if (document.getElementById('labelFit')) document.getElementById('labelFit').innerText = sessionData.lang === 'en' ? "fit20 Age" : "fit20 Age";
+            if (document.getElementById('labelFit')) document.getElementById('labelFit').innerText = "fit20 Age";
             if (document.getElementById('labelCal')) document.getElementById('labelCal').innerText = sessionData.lang === 'en' ? "Calendar" : "Kalender";
         }
 
@@ -179,64 +177,4 @@
                 if (data.record.user && data.record.program === 'recovery') {
                     sessionData = data.record;
                     updateUILanguage();
-                    document.getElementById('userName').innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo ") + sessionData.user;
-                    document.getElementById('personalMsg').innerText = currentLabels.ready_msg;
-                    document.getElementById('startActionBtn').classList.remove('hidden');
-                    ["a","b","c","d","e","f","g","h","i","j"].forEach(cat => preSelectedTexts[cat] = pickStaticText(cat));
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
-                }
-            } catch (e) {}
-        }
-
-        function pickStaticText(cat) {
-            const langIdx = sessionData.lang === 'en' ? [5, 6] : [3, 4];
-            const matches = reservoir.filter(t => t[0] === cat && (t[1] === "both" || t[1] === sessionData.genders[0]) && (t[2] === "all" || sessionData.profiles.includes(t[2])));
-            const pick = matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t[0] === cat);
-            return pick ? { title: pick[langIdx[0]], text: pick[langIdx[1]] } : { title: "", text: "" };
-        }
-
-        document.getElementById('startActionBtn').addEventListener('click', () => {
-            isSessionActive = true;
-            document.getElementById('setupArea').classList.add('hidden');
-            document.getElementById('actionArea').classList.remove('hidden');
-            document.getElementById('overallTimer').classList.remove('hidden');
-            document.getElementById('vTag').style.display = 'none';
-            runMasterFlow();
-        });
-
-        function runMasterFlow() {
-            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
-            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), timeline = document.getElementById('timelineArea');
-            let start = Date.now(), activeSteps = sessionData.steps;
-
-            let totalTime = 0;
-            if(activeSteps.includes('recovery')) totalTime += 180;
-            if(activeSteps.includes('results')) totalTime += 60;
-            if(activeSteps.includes('science')) totalTime += 120;
-            if(activeSteps.includes('breathing')) totalTime += 240;
-            let currentTimer = totalTime;
-
-            const tInt = setInterval(() => {
-                let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
-                document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                document.getElementById('bar').style.width = `${((totalTime - currentTimer) / totalTime) * 100}%`;
-                if (currentTimer-- <= 0) clearInterval(tInt);
-            }, 1000);
-
-            const masterInt = setInterval(() => {
-                let elapsed = Date.now() - start, stepStart = 0;
-                if (activeSteps.includes('recovery')) {
-                    if (elapsed < 180000) {
-                        const cat = ["a","b","c","d","e","f"][Math.floor(elapsed / 30000)];
-                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
-                        let deg = ((elapsed % 30000) / 30000) * 360;
-                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
-                        return;
-                    }
-                    stepStart += 180;
-                }
-                if (activeSteps.includes('results')) {
-                    let resElapsed = elapsed - (stepStart * 1000);
-                    if (resElapsed < 60000) {
-                        pie.classList.add('hidden');
-                        if (resElapsed < 2
+                    document.getElementById('userName').innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo
