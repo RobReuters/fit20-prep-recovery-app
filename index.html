@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v3.2</title>
+    <title>fit20 Recovery v3.3</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #FFF; color: var(--antraciet); font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
-        
         #vTag { position: absolute; bottom: 15px; left: 15px; font-size: 10px; color: #888; z-index: 1000; }
         .logo { position: fixed; bottom: 4vh; right: 4vw; width: 20vw; max-width: 220px; z-index: 1000; }
         .top-section { height: 10vh; width: 100%; padding: 20px; display: flex; justify-content: flex-start; }
@@ -18,11 +17,10 @@
         #overallTimer { font-size: 3vw; font-weight: 700; color: #ddd; }
         .progress { position: absolute; bottom: 0; width: 100%; height: 12px; background: #eee; }
         #bar { width: 0%; height: 100%; background: var(--fit20-green); transition: width 1s linear; }
-
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE v3.2 */
+        /* TIMELINE v3.3 */
         #timelineArea { width: 100vw; height: 400px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 8px; background: #eee; left: 50%; display: flex; align-items: center; transition: none; }
         .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); top: 0; }
@@ -31,52 +29,34 @@
         .milestone-label { font-size: 1vw; font-weight: bold; color: #bbb; white-space: nowrap; position: absolute; top: 30px; }
         .milestone.reached .milestone-label { color: var(--antraciet); }
         .milestone-count { font-size: 0.8vw; color: #ccc; position: absolute; top: -25px; font-weight: bold; }
-
-        /* De Stilstaande Marker in het midden */
-        .current-marker { 
-            position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; 
-            background: var(--fit20-blue); border-radius: 50%; 
-            transform: translate(-50%, -50%); z-index: 100; 
-            border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .current-marker { position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .marker-val { font-size: 2.8vw; font-weight: 900; line-height: 1; }
         .marker-label { font-size: 0.9vw; font-weight: bold; opacity: 0.9; }
-
-        /* REVEAL EFFECT */
         .reveal-active .current-marker { width: 220px; height: 220px; }
         .reveal-active .marker-val { font-size: 5vw; }
-        .milestone-title-big { 
-            position: absolute; bottom: -120px; font-size: 3.5vw; font-weight: 900; 
-            color: var(--fit20-blue); opacity: 0; transform: translateY(20px); transition: all 0.8s;
-        }
+        .milestone-title-big { position: absolute; bottom: -120px; font-size: 3.5vw; font-weight: 900; color: var(--fit20-blue); opacity: 0; transform: translateY(20px); transition: all 0.8s; }
         .reveal-active .milestone-title-big { opacity: 1; transform: translateY(0); }
+        .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0; pointer-events: none; }
+        @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
 
-        /* VUURWERK (CSS particles) */
-        .firework { position: absolute; width: 5px; height: 5px; border-radius: 50%; opacity: 0; }
-        @keyframes explode {
-            0% { transform: translate(0,0); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
-        }
-
-        /* OVERIGE */
+        /* AGE RESULTS */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
         .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
-        .hidden { display: none !important; }
         .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
+        .hidden { display: none !important; }
+        .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
     </style>
 </head>
 <body>
-    <div id="vTag">v3.2</div>
+    <div id="vTag">v3.3</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Laden...</p>
+        <p id="personalMsg" class="sub-text">Initialiseren...</p>
         <button id="startActionBtn" class="hidden" style="padding: 3vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer;">START</button>
     </div>
 
@@ -133,20 +113,35 @@
         let reservoir = [], labelsRaw = [], milestoneData = [], sessionData = { lang: 'nl' }, isSessionActive = false, currentLabels = {}, preSelectedTexts = {};
 
         function parseCSV(text) {
-            return text.split(/\r?\n/).slice(1).map(line => {
+            return text.split(/\r?\n/).filter(l => l.trim() !== "").map(line => {
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 return cols.map(c => c.replace(/^"|"$/g, '').trim().replace(/""/g, '"'));
             });
         }
 
         async function loadData() {
+            const msg = document.getElementById('personalMsg');
             try {
-                const [resC, resL, resM] = await Promise.all([fetch(CONTENT_URL+'&t='+Date.now()), fetch(LABELS_URL+'&t='+Date.now()), fetch(MILESTONES_URL+'&t='+Date.now())]);
+                msg.innerText = "Bezig met ophalen content...";
+                const resC = await fetch(CONTENT_URL+'&t='+Date.now());
+                if(!resC.ok) throw new Error("Content Sheet (gid=0) niet bereikbaar");
                 reservoir = parseCSV(await resC.text());
+
+                msg.innerText = "Bezig met ophalen labels...";
+                const resL = await fetch(LABELS_URL+'&t='+Date.now());
+                if(!resL.ok) throw new Error("Labels Sheet (gid=583...) niet bereikbaar");
                 labelsRaw = parseCSV(await resL.text());
+
+                msg.innerText = "Bezig met ophalen mijlpalen...";
+                const resM = await fetch(MILESTONES_URL+'&t='+Date.now());
+                if(!resM.ok) throw new Error("Milestones Sheet (gid=135...) niet bereikbaar");
                 milestoneData = parseCSV(await resM.text()).sort((a,b) => parseInt(a[0]) - parseInt(b[0]));
+
                 updateUILanguage();
-            } catch (e) { console.error(e); }
+                console.log("Data succesvol geladen");
+            } catch (e) { 
+                msg.innerHTML = `<span style="color:red">LAADFOUT: ${e.message}<br>Check of alle tabbladen openbaar zijn gepubliceerd.</span>`;
+            }
         }
 
         function updateUILanguage() {
@@ -176,4 +171,201 @@
         }
 
         function pickStaticText(cat) {
-            const langIdx = sessionData.lang === 'en'
+            const langIdx = sessionData.lang === 'en' ? [5, 6] : [3, 4];
+            const matches = reservoir.filter(t => t[0] === cat && (t[1] === "both" || t[1] === sessionData.genders[0]) && (t[2] === "all" || sessionData.profiles.includes(t[2])));
+            const pick = matches.length > 0 ? matches[Math.floor(Math.random() * matches.length)] : reservoir.find(t => t[0] === cat);
+            return pick ? { title: pick[langIdx[0]], text: pick[langIdx[1]] } : { title: "", text: "" };
+        }
+
+        document.getElementById('startActionBtn').addEventListener('click', () => {
+            isSessionActive = true;
+            document.getElementById('setupArea').classList.add('hidden');
+            document.getElementById('actionArea').classList.remove('hidden');
+            document.getElementById('overallTimer').classList.remove('hidden');
+            document.getElementById('vTag').style.display = 'none';
+            runMasterFlow();
+        });
+
+        function runMasterFlow() {
+            const title = document.getElementById('mainTitle'), sub = document.getElementById('mainSubContainer');
+            const pie = document.getElementById('flowCircle'), results = document.getElementById('resultsArea'), timeline = document.getElementById('timelineArea'), prep = document.getElementById('prepCountdown');
+            let start = Date.now(), activeSteps = sessionData.steps;
+
+            let totalTime = 0;
+            if(activeSteps.includes('recovery')) totalTime += 180;
+            if(activeSteps.includes('results')) totalTime += 60;
+            if(activeSteps.includes('science')) totalTime += 120;
+            if(activeSteps.includes('breathing')) totalTime += 240;
+            let currentTimer = totalTime;
+
+            const tInt = setInterval(() => {
+                let m = Math.floor(currentTimer / 60), s = currentTimer % 60;
+                document.getElementById('timeVal').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                document.getElementById('bar').style.width = `${((totalTime - currentTimer) / totalTime) * 100}%`;
+                if (currentTimer-- <= 0) clearInterval(tInt);
+            }, 1000);
+
+            const masterInt = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let stepStart = 0;
+
+                if (activeSteps.includes('recovery')) {
+                    if (elapsed < 180000) {
+                        const cat = ["a","b","c","d","e","f"][Math.floor(elapsed / 30000)];
+                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
+                        let deg = ((elapsed % 30000) / 30000) * 360;
+                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+                        return;
+                    }
+                    stepStart += 180;
+                }
+
+                if (activeSteps.includes('results')) {
+                    let resElapsed = elapsed - (stepStart * 1000);
+                    if (resElapsed < 60000) {
+                        pie.classList.add('hidden');
+                        if (resElapsed < 20000) {
+                            title.innerText = sessionData.lang === 'en' ? "Your fit20 Journey" : "Jouw fit20 Reis";
+                            sub.innerText = sessionData.lang === 'en' ? "Consistency is the key to strength." : "Consistentie is de sleutel tot kracht.";
+                            timeline.classList.remove('hidden');
+                            if (!timeline.dataset.started) { startJourney(parseInt(sessionData.totalSessions || 0)); timeline.dataset.started = "true"; }
+                        } else if (resElapsed < 40000) {
+                            timeline.classList.add('hidden');
+                            title.innerText = sessionData.lang === 'en' ? "Focus on Vitality" : "Focus op Vitaliteit";
+                            sub.innerText = sessionData.lang === 'en' ? "Every session builds a stronger you." : "Elke sessie bouwt aan een sterkere versie van jezelf.";
+                        } else {
+                            results.classList.remove('hidden');
+                            title.innerText = currentLabels.results_title; sub.innerText = currentLabels.results_sub;
+                            document.getElementById('valCal').innerText = sessionData.calAge;
+                            if (document.getElementById('meterFill').style.width !== "100%") {
+                                setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge)); }, 100);
+                            }
+                        }
+                        return;
+                    }
+                    stepStart += 60;
+                }
+
+                if (activeSteps.includes('science')) {
+                    let sciElapsed = elapsed - (stepStart * 1000);
+                    if (sciElapsed < 120000) {
+                        results.classList.add('hidden'); pie.classList.remove('hidden');
+                        const cat = ["g","h","i","j"][Math.floor(sciElapsed / 30000)];
+                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
+                        let deg = (sciElapsed % 30000 / 30000) * 360;
+                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
+                        return;
+                    }
+                    stepStart += 120;
+                }
+                
+                if (activeSteps.includes('breathing')) {
+                    let breathElapsed = elapsed - (stepStart * 1000);
+                    if (breathElapsed < 30000) {
+                        title.innerText = currentLabels.prep_title; sub.innerText = currentLabels.prep_sub;
+                        pie.classList.add('hidden'); prep.classList.remove('hidden');
+                        prep.innerText = Math.ceil((30000 - breathElapsed) / 1000);
+                        return;
+                    } else {
+                        clearInterval(masterInt);
+                        document.getElementById('actionArea').classList.add('hidden');
+                        document.getElementById('breathingArea').classList.remove('hidden');
+                        startBreathing();
+                        return;
+                    }
+                }
+                
+                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinal(); } else { location.reload(); }
+            }, 500);
+        }
+
+        function startJourney(total) {
+            const track = document.getElementById('timelineTrack'), markerNum = document.getElementById('markerNum'), langIdx = sessionData.lang === 'en' ? 2 : 1;
+            const spacing = 350;
+            let lastMilestoneName = "";
+            track.innerHTML = "";
+            milestoneData.forEach((ms, index) => {
+                let div = document.createElement('div'); div.className = "milestone"; div.id = "ms-" + index; div.style.left = (index * spacing) + "px";
+                div.innerHTML = `<div class="milestone-count">${ms[0]}</div><div class="milestone-dot"></div><div class="milestone-label">${ms[langIdx]}</div>`;
+                track.appendChild(div);
+                if (total >= parseInt(ms[0])) lastMilestoneName = ms[langIdx];
+            });
+            let startTime = Date.now();
+            const anim = setInterval(() => {
+                let progress = Math.min((Date.now() - startTime) / 14000, 1);
+                let currentVal = Math.round(progress * total);
+                markerNum.innerText = currentVal;
+                let currentPos = 0;
+                milestoneData.forEach((ms, index) => {
+                    if (currentVal >= parseInt(ms[0])) {
+                        document.getElementById("ms-"+index).classList.add('reached');
+                        currentPos = index * spacing;
+                        if (index < milestoneData.length - 1) {
+                            let nextSess = parseInt(milestoneData[index+1][0]), prevSess = parseInt(ms[0]);
+                            currentPos += ((currentVal - prevSess) / (nextSess - prevSess)) * spacing;
+                        }
+                    }
+                });
+                track.style.transform = `translateX(-${currentPos}px)`;
+                if (progress >= 1) { clearInterval(anim); triggerCelebration(lastMilestoneName); }
+            }, 30);
+        }
+
+        function triggerCelebration(name) {
+            document.getElementById('timelineArea').classList.add('reveal-active');
+            document.getElementById('bigMilestoneLabel').innerText = name;
+            const container = document.getElementById('fireworkContainer');
+            for(let i=0; i<30; i++) {
+                const p = document.createElement('div'); p.className = 'firework';
+                p.style.background = i % 2 === 0 ? 'var(--fit20-green)' : 'var(--fit20-blue)';
+                p.style.left = '50%'; p.style.top = '50%';
+                const tx = (Math.random() - 0.5) * 600, ty = (Math.random() - 0.5) * 600;
+                p.style.setProperty('--tx', tx + 'px'); p.style.setProperty('--ty', ty + 'px');
+                p.style.animation = `explode ${1 + Math.random()}s forwards`;
+                container.appendChild(p);
+            }
+        }
+
+        function animateAgeCount(s, e) {
+            let cur = s;
+            const int = setInterval(() => {
+                cur -= (s-e)/100; document.getElementById('dynamicAge').innerText = Math.round(cur);
+                if(cur <= e) { 
+                    clearInterval(int); document.getElementById('dynamicAge').innerText = e;
+                    document.getElementById('ageDiffBadge').innerText = currentLabels.badge_text.replace('{diff}', (s-e));
+                    document.getElementById('ageDiffBadge').classList.add('show');
+                }
+            }, 80);
+        }
+
+        function startBreathing() {
+            const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
+            let step = 1, phase = 0, total = 210;
+            const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
+            const bInt = setInterval(() => {
+                bTitle.innerText = phases[phase]; bContent.innerText = step;
+                if (phase === 0) bPie.style.transform = "scale(1.4)";
+                if (phase === 2) bPie.style.transform = "scale(0.8)";
+                if (total <= 6) bArea.classList.add('soft-fade');
+                if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
+                if (total-- <= 0) { clearInterval(bInt); if(sessionData.steps.includes('end')) showFinal(); else location.reload(); }
+            }, 1000);
+        }
+
+        function showFinal() {
+            document.getElementById('breathingArea').classList.add('hidden');
+            const area = document.getElementById('actionArea');
+            area.classList.remove('hidden');
+            document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('mainTitle').innerText = currentLabels.end_title.replace('{user}', sessionData.user);
+            document.getElementById('mainSubContainer').innerText = currentLabels.end_sub;
+            const p = document.getElementById('flowCircle'); p.classList.remove('hidden'); p.className="visual-circle"; p.style.background="var(--light-gray)"; p.style.transform="none";
+            document.getElementById('flowCircleContent').innerText = "✓";
+            setTimeout(() => location.reload(), 30000);
+        }
+
+        loadData();
+        setInterval(checkInbox, 3000);
+    </script>
+</body>
+</html>
