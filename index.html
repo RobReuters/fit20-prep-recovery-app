@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v3.8</title>
+    <title>fit20 Recovery v3.9</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,17 +23,19 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE v3.8 - DE WEG */
+        /* TIMELINE v3.9 - DE WEG */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         
-        .timeline-track-bg { position: absolute; height: 10px; background: #eee; left: 0; width: 10000px; top: 60%; transform: translateY(-50%); border-radius: 5px; }
-        .timeline-track-fill { position: absolute; height: 10px; background: var(--fit20-green); left: 50%; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
+        /* De bewegende container voor de weg, stippen en labels */
+        .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         
-        /* De bewegende container voor stippen en labels */
-        .timeline-track { position: absolute; height: 100%; left: 50%; width: 5000px; display: flex; align-items: center; transition: none; z-index: 5; }
+        /* De basislijn (grijs) */
+        .road-base { position: absolute; height: 10px; background: #eee; left: 0; width: 100%; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 1; }
+        /* De afgelegde weg (groen) - zit binnen de bewegende track */
+        .road-progress { position: absolute; height: 10px; background: var(--fit20-green); left: 0; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
         
-        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; }
-        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; transform: translateY(-50%); }
+        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; z-index: 10; }
+        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); transition: background 0.3s; }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
         
         .milestone-label { font-size: 1.1vw; font-weight: bold; color: #bbb; white-space: nowrap; margin-top: 25px; transition: all 0.3s ease; }
@@ -49,7 +51,6 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        /* Het lijntje van de marker naar de weg */
         .current-marker::after { content: ""; position: absolute; top: 100%; left: 50%; width: 4px; height: 120px; background: repeating-linear-gradient(to bottom, var(--fit20-blue), var(--fit20-blue) 5px, transparent 5px, transparent 10px); opacity: 0.4; transform: translateX(-50%); z-index: -1; }
 
         .marker-val { font-size: 3vw; font-weight: 900; line-height: 1; }
@@ -59,29 +60,31 @@
         .reveal-active .current-marker { width: 230px; height: 230px; top: 40%; }
         .reveal-active .current-marker::after { display: none; }
         .reveal-active .marker-val { font-size: 7vw; }
-        .milestone-title-big { position: absolute; width: 100%; top: 72%; left: 0; font-size: 4.5vw; font-weight: 900; color: var(--fit20-blue); opacity: 0; transform: translateY(30px); transition: all 1s ease-out; text-align: center; z-index: 110; }
+        
+        /* Grote Milestone Titel - Lager geplaatst tegen overlap */
+        .milestone-title-big { 
+            position: absolute; width: 100%; top: 80%; left: 0; font-size: 4.5vw; font-weight: 900; 
+            color: var(--fit20-blue); opacity: 0; transform: translateY(30px); transition: all 1s ease-out; 
+            text-align: center; z-index: 110; 
+        }
         .reveal-active .milestone-title-big { opacity: 1; transform: translateY(0); }
 
         .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0; pointer-events: none; }
         @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
 
-        /* OVERIGE MODULES */
-        #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
         .hidden { display: none !important; }
         .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); }
         .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
         .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
     </style>
-</head>
+ head>
 <body>
-    <div id="vTag">v3.8</div>
+    <div id="vTag">v3.9</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
         <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Initialiseren...</p>
+        <p id="personalMsg" class="sub-text">Laden...</p>
         <button id="startActionBtn" class="hidden" style="padding: 3vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer;">START</button>
     </div>
 
@@ -90,10 +93,10 @@
         <div id="mainSubContainer" class="sub-text"></div>
         
         <div id="timelineArea" class="hidden">
-            <div class="timeline-track-bg"></div>
-            <div class="timeline-track-fill" id="trackFill"></div>
-            
-            <div class="timeline-track" id="timelineTrack"></div>
+            <div class="timeline-track" id="timelineTrack">
+                <div class="road-base"></div>
+                <div class="road-progress" id="roadFill"></div>
+            </div>
             
             <div class="current-marker" id="userMarker">
                 <span id="markerNum" class="marker-val">0</span>
@@ -236,156 +239,4 @@
                     let resElapsed = elapsed - (stepStart * 1000);
                     if (resElapsed < 60000) {
                         pie.classList.add('hidden');
-                        if (resElapsed < 20000) {
-                            title.innerText = sessionData.lang === 'en' ? "Your fit20 Journey" : "Jouw fit20 Reis";
-                            sub.innerText = sessionData.lang === 'en' ? "Consistency is the key to strength." : "Consistentie is de sleutel tot kracht.";
-                            timeline.classList.remove('hidden');
-                            if (!timeline.dataset.started) { startJourney(parseInt(sessionData.totalSessions || 0)); timeline.dataset.started = "true"; }
-                        } else if (resElapsed < 40000) {
-                            timeline.classList.add('hidden');
-                            title.innerText = sessionData.lang === 'en' ? "Focus on Vitality" : "Focus op Vitaliteit";
-                            sub.innerText = sessionData.lang === 'en' ? "Every session builds a stronger you." : "Elke sessie bouwt aan een sterkere versie van jezelf.";
-                        } else {
-                            results.classList.remove('hidden');
-                            title.innerText = currentLabels.results_title; sub.innerText = currentLabels.results_sub;
-                            document.getElementById('valCal').innerText = sessionData.calAge;
-                            if (document.getElementById('meterFill').style.width !== "100%") {
-                                setTimeout(() => { document.getElementById('meterFill').style.width = "100%"; animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge)); }, 100);
-                            }
-                        }
-                        return;
-                    }
-                    stepStart += 60;
-                }
-                if (activeSteps.includes('science')) {
-                    let sciElapsed = elapsed - (stepStart * 1000);
-                    if (sciElapsed < 120000) {
-                        results.classList.add('hidden'); pie.classList.remove('hidden');
-                        const cat = ["g","h","i","j"][Math.floor(sciElapsed / 30000)];
-                        title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
-                        let deg = (sciElapsed % 30000 / 30000) * 360;
-                        pie.style.background = `conic-gradient(var(--fit20-green) ${deg}deg, var(--light-gray) ${deg}deg)`;
-                        return;
-                    }
-                    stepStart += 120;
-                }
-                if (activeSteps.includes('breathing')) {
-                    let breathElapsed = elapsed - (stepStart * 1000);
-                    if (breathElapsed < 30000) {
-                        title.innerText = currentLabels.prep_title; sub.innerText = currentLabels.prep_sub;
-                        pie.classList.add('hidden'); return;
-                    } else {
-                        clearInterval(masterInt);
-                        document.getElementById('actionArea').classList.add('hidden');
-                        document.getElementById('breathingArea').classList.remove('hidden');
-                        startBreathing(); return;
-                    }
-                }
-                if (activeSteps.includes('end')) { clearInterval(masterInt); showFinal(); } else { location.reload(); }
-            }, 500);
-        }
-
-        function startJourney(total) {
-            const track = document.getElementById('timelineTrack'), markerNum = document.getElementById('markerNum'), langIdx = sessionData.lang === 'en' ? 2 : 1;
-            const fill = document.getElementById('trackFill');
-            const spacing = 350;
-            
-            // Journey Bepaling uit v3.7
-            const j1_max = parseInt(currentLabels.j1_max || 29), j2_max = parseInt(currentLabels.j2_max || 69), j3_max = parseInt(currentLabels.j3_max || 149);
-            let journeyCol = 3;
-            if (total > j3_max) journeyCol = 6; else if (total > j2_max) journeyCol = 5; else if (total > j1_max) journeyCol = 4;
-
-            const activeMilestones = milestoneDataRaw.filter(ms => ms[journeyCol] && ms[journeyCol].toLowerCase() === 'x');
-            let lastMilestoneName = "", triggeredIdx = -1;
-
-            track.innerHTML = "";
-            activeMilestones.forEach((ms, index) => {
-                let div = document.createElement('div'); div.className = "milestone"; div.id = "ms-" + index; div.style.left = (index * spacing) + "px";
-                div.innerHTML = `<div class="milestone-count">${ms[0]}</div><div class="milestone-dot"></div><div class="milestone-label">${ms[langIdx]}</div>`;
-                track.appendChild(div);
-                if (total >= parseInt(ms[0])) lastMilestoneName = ms[langIdx];
-            });
-
-            let startTime = Date.now();
-            const anim = setInterval(() => {
-                let progress = Math.min((Date.now() - startTime) / 14000, 1);
-                let currentVal = Math.round(progress * total);
-                markerNum.innerText = currentVal;
-
-                let currentPos = 0;
-                activeMilestones.forEach((ms, index) => {
-                    if (currentVal >= parseInt(ms[0])) {
-                        const el = document.getElementById("ms-"+index); el.classList.add('reached');
-                        if (index > triggeredIdx) { el.classList.add('active-pop'); setTimeout(() => el.classList.remove('active-pop'), 800); triggeredIdx = index; }
-                        currentPos = index * spacing;
-                        if (index < activeMilestones.length - 1) {
-                            let nextSess = parseInt(activeMilestones[index+1][0]), prevSess = parseInt(ms[0]);
-                            currentPos += ((currentVal - prevSess) / (nextSess - prevSess)) * spacing;
-                        }
-                    }
-                });
-                track.style.transform = `translateX(-${currentPos}px)`;
-                fill.style.width = currentPos + "px"; // De groene weg vullen
-
-                if (progress >= 1) { clearInterval(anim); triggerCelebration(lastMilestoneName); }
-            }, 30);
-        }
-
-        function triggerCelebration(name) {
-            document.getElementById('actionArea').classList.add('reveal-active');
-            document.getElementById('bigMilestoneLabel').innerText = name;
-            const container = document.getElementById('fireworkContainer');
-            for(let i=0; i<40; i++) {
-                const p = document.createElement('div'); p.className = 'firework';
-                p.style.background = i % 2 === 0 ? 'var(--fit20-green)' : 'var(--fit20-blue)';
-                p.style.left = '50%'; p.style.top = '40%';
-                const tx = (Math.random() - 0.5) * 800, ty = (Math.random() - 0.5) * 800;
-                p.style.setProperty('--tx', tx + 'px'); p.style.setProperty('--ty', ty + 'px');
-                p.style.animation = `explode ${1.5 + Math.random()}s forwards`;
-                container.appendChild(p);
-            }
-        }
-
-        function animateAgeCount(s, e) {
-            let cur = s;
-            const int = setInterval(() => {
-                cur -= (s-e)/100; document.getElementById('dynamicAge').innerText = Math.round(cur);
-                if(cur <= e) { 
-                    clearInterval(int); document.getElementById('dynamicAge').innerText = e;
-                    document.getElementById('ageDiffBadge').innerText = (currentLabels.badge_text || "").replace('{diff}', (s-e));
-                    document.getElementById('ageDiffBadge').classList.add('show');
-                }
-            }, 80);
-        }
-
-        function startBreathing() {
-            const bArea = document.getElementById('breathingArea'), bTitle = document.getElementById('breathTitle'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
-            let step = 1, phase = 0, total = 210;
-            const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
-            const bInt = setInterval(() => {
-                bTitle.innerText = phases[phase]; bContent.innerText = step;
-                if (phase === 0) bPie.style.transform = "scale(1.4)";
-                if (phase === 2) bPie.style.transform = "scale(0.8)";
-                if (total <= 6) bArea.classList.add('soft-fade');
-                if (step++ >= 4) { step = 1; phase = (phase + 1) % 4; }
-                if (total-- <= 0) { clearInterval(bInt); if(sessionData.steps.includes('end')) showFinal(); else location.reload(); }
-            }, 1000);
-        }
-
-        function showFinal() {
-            document.getElementById('breathingArea').classList.add('hidden');
-            const area = document.getElementById('actionArea');
-            area.classList.remove('hidden'); area.classList.remove('reveal-active');
-            document.getElementById('timelineArea').classList.add('hidden');
-            document.getElementById('resultsArea').classList.add('hidden');
-            document.getElementById('mainTitle').innerText = (currentLabels.end_title || "").replace('{user}', sessionData.user);
-            document.getElementById('mainSubContainer').innerText = currentLabels.end_sub;
-            const p = document.getElementById('flowCircle'); p.classList.remove('hidden'); p.className="visual-circle"; p.style.background="var(--light-gray)"; p.style.transform="none";
-            document.getElementById('flowCircleContent').innerText = "✓";
-            setTimeout(() => location.reload(), 30000);
-        }
-        loadData();
-        setInterval(checkInbox, 3000);
-    </script>
-</body>
-</html>
+                        if (resElapsed < 2
