@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v4.6</title>
+    <title>fit20 Recovery v4.7</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,7 +23,7 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; min-height: 1.2em; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE v4.6 */
+        /* TIMELINE v4.7 */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         
@@ -53,7 +53,7 @@
         .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0; pointer-events: none; }
         @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
 
-        /* ANALOGY STYLING (v4.6 Lijst-weergave) */
+        /* ANALOGY STYLING (v4.7) */
         #analogyArea { width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; }
         .weight-counter { font-size: 5.5vw; font-weight: 900; color: var(--fit20-blue); margin-bottom: 3vh; }
         .animal-display { display: flex; flex-direction: column; align-items: center; gap: 15px; min-height: 220px; margin-bottom: 2vh; }
@@ -63,61 +63,4 @@
         @keyframes popBadge { to { opacity: 1; transform: scale(1); } }
         
         .distance-reveal { font-size: 2vw; font-weight: 700; color: var(--antraciet); margin-top: 2vh; opacity: 0; transition: opacity 1s; padding: 15px 30px; background: #f0f8ff; border-radius: 20px; border: 2px solid var(--fit20-blue); text-align: center; line-height: 1.4; }
-        .distance-reveal.show { opacity: 1; transform: translateY(-5px); }
-
-        /* RESULTS STYLING */
-        #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
-        .hidden { display: none !important; }
-        .visual-circle { width: 260px; height: 260px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); }
-        .visual-circle::after { content: ""; width: 220px; height: 220px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
-        .circle-number { z-index: 10; font-size: 80px; font-weight: 800; color: var(--fit20-green); position: relative; }
-        .soft-fade { opacity: 0.1; transition: opacity 4s ease-in-out; }
-    </style>
-</head>
-<body>
-    <div id="vTag">v4.6</div>
-    <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
-
-    <div class="middle-section" id="setupArea">
-        <h1 id="userName" style="font-size: 6vw; margin-bottom: 2vh;">fit20 Recovery</h1>
-        <p id="personalMsg" class="sub-text">Initialiseren...</p>
-        <button id="startActionBtn" class="hidden" style="padding: 3vh 8vw; background: var(--fit20-green); color: white; border: none; border-radius: 20px; font-size: 3.5vw; font-weight: bold; cursor: pointer;">START</button>
-    </div>
-
-    <div class="middle-section hidden" id="actionArea">
-        <div class="instruction-title" id="mainTitle"></div>
-        <div id="mainSubContainer" class="sub-text"></div>
-        
-        <div id="timelineArea" class="hidden">
-            <div class="timeline-track" id="timelineTrack">
-                <div class="road-base"></div>
-                <div class="road-progress" id="roadFill"></div>
-            </div>
-            <div class="current-marker" id="userMarker">
-                <span id="markerNum" class="marker-val">0</span>
-                <span id="markerLab" class="marker-label">Sessies</span>
-            </div>
-            <div id="bigMilestoneLabel" class="milestone-title-big">...</div>
-            <div id="fireworkContainer"></div>
-        </div>
-
-        <div id="analogyArea" class="hidden">
-            <div class="weight-counter" id="weightVal">0 kg</div>
-            <div class="animal-display" id="animalDisplay"></div>
-            <div class="distance-reveal" id="distReveal"></div>
-        </div>
-
-        <div id="resultsArea" class="hidden">
-            <div class="age-badge" id="ageDiffBadge"></div>
-            <div class="meter-container" style="width:100%; height:44px; background:#eee; border-radius:22px; position:relative; margin:10vh 0 2vh 0; border:3px solid white;">
-                <div style="position:absolute; top:-105px; left:0; display:flex; flex-direction:column; align-items:center;">
-                    <span id="labelFit" style="font-size:1.2vw; color:#999; font-weight:bold;">fit20 Age</span><br>
-                    <span id="dynamicAge" style="font-size:5.5vw; font-weight:900; color:var(--fit20-green); line-height:1;">0</span>
-                </div>
-                <div style="position:absolute; top:-105px; right:0; display:flex; flex-direction:column; align-items:center;">
-                    <span id="labelCal" style="font-size:1.2vw; color:#999; font-weight:bold;">Kalender</span><br>
-                    <span id="valCal" style="font-size:5.5vw; font-weight:900; color:var(--fit20-green); line-height:1;">0</span>
-                </div>
-                <div id="meterFill" style="height:100%; background:var(--fit20-green); border-radius:22px; position:absolute; top:0; right:0; width:0%; transition:width
+        .distance-reveal.show { opacity: 1; transform:
