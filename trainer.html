@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fit20 Trainer App v3.1</title>
+    <title>fit20 Trainer App v4.8</title>
     <style>
         :root { --fit20-green: #8BC63F; --antraciet: #333333; }
         body { font-family: sans-serif; background: #f4f4f4; padding: 15px; color: var(--antraciet); position: relative; }
@@ -16,21 +16,22 @@
         input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 15px; margin-bottom: 10px; box-sizing: border-box; }
         .option { display: flex; align-items: center; margin-bottom: 6px; cursor: pointer; font-size: 13px; }
         .option input { margin-right: 8px; width: 16px; height: 16px; accent-color: var(--fit20-green); }
+        .sub-option { margin-left: 24px; margin-bottom: 10px; font-style: italic; }
         #sendBtn { width: 100%; background: var(--fit20-green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.3s; }
         #sendBtn:hover { background: #7ab335; }
         #status { text-align: center; margin-top: 10px; font-weight: bold; min-height: 1.2em; }
     </style>
 </head>
 <body>
-<div class="version-tag">v3.1</div>
+<div class="version-tag">v4.8</div>
 <div class="container">
-    <h2>Recovery Control v3.1</h2>
+    <h2>Recovery Control v4.8</h2>
     <div class="grid">
         <div class="col">
             <label>Lid Naam:</label>
             <input type="text" id="fname" placeholder="Voornaam...">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Kalender:</label><input type="number" id="calAge"></div>
+                <div><label>Kalenderleeftijd:</label><input type="number" id="calAge"></div>
                 <div><label>fit20 Age:</label><input type="number" id="fitAge"></div>
             </div>
             <label>Totaal aantal sessies:</label>
@@ -63,7 +64,12 @@
             <label>Programma Onderdelen:</label>
             <div id="stepGroup">
                 <label class="option"><input type="checkbox" value="recovery" checked> Deep Recovery (3m)</label>
+                
                 <label class="option"><input type="checkbox" value="results" checked> Jouw Resultaten (1m)</label>
+                <div class="sub-option">
+                    <label class="option"><input type="checkbox" id="cbFitAge" checked> Inclusief fit20 Age</label>
+                </div>
+
                 <label class="option"><input type="checkbox" value="science" checked> Wetenschap (2m)</label>
                 <label class="option"><input type="checkbox" value="breathing" checked> Ademhaling (4m)</label>
                 <label class="option"><input type="checkbox" value="end" checked> Eindboodschap (30s)</label>
@@ -78,7 +84,6 @@
     const BIN_ID = '69d00c00856a682189f8b7f6';
     const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
 
-    // Limiet op doelen (max 2)
     document.querySelectorAll('#profileGroup input').forEach(cb => {
         cb.addEventListener('change', () => {
             const checked = document.querySelectorAll('#profileGroup input:checked');
@@ -97,7 +102,8 @@
         const lang = document.querySelector('input[name="lang"]:checked').value;
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const profiles = Array.from(document.querySelectorAll('#profileGroup input:checked')).map(cb => cb.value);
-        const steps = Array.from(document.querySelectorAll('#stepGroup input:checked')).map(cb => cb.value);
+        const steps = Array.from(document.querySelectorAll('#stepGroup > .option > input:checked')).map(cb => cb.value);
+        const showFitAge = document.getElementById('cbFitAge').checked;
 
         if(steps.length === 0) return alert("Selecteer minimaal één programma onderdeel");
 
@@ -117,7 +123,8 @@
                     lang: lang, 
                     genders: [gender], 
                     profiles: profiles, 
-                    steps: steps, 
+                    steps: steps,
+                    showFitAge: showFitAge, // NIEUW: Wordt nu meegestuurd
                     program: "recovery" 
                 })
             });
