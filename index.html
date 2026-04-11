@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v4.3</title>
+    <title>fit20 Recovery v4.4</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,7 +23,7 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 2vh; min-height: 1.2em; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; }
 
-        /* TIMELINE v4.3 */
+        /* TIMELINE v4.4 */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         
@@ -60,15 +60,38 @@
         .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0; pointer-events: none; }
         @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
 
-        /* ANALOGY STYLING (v4.3) */
+        /* ANALOGY STYLING (v4.4 Lijst-weergave) */
         #analogyArea { width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; }
-        .weight-counter { font-size: 5vw; font-weight: 900; color: var(--fit20-blue); margin-bottom: 2vh; }
-        .animal-display { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; perspective: 1000px; min-height: 200px; align-items: flex-end; }
-        .animal-icon { font-size: 40px; animation: dropIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: translateY(-100px); }
-        .animal-icon.large { font-size: 80px; }
-        .animal-icon.mid { font-size: 50px; }
-        @keyframes dropIn { to { opacity: 1; transform: translateY(0); } }
-        .distance-reveal { font-size: 2.2vw; font-weight: 700; color: var(--antraciet); margin-top: 4vh; opacity: 0; transition: opacity 1s; }
+        .weight-counter { font-size: 5.5vw; font-weight: 900; color: var(--fit20-blue); margin-bottom: 3vh; }
+        
+        .animal-display { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 15px; 
+            min-height: 220px; 
+            margin-bottom: 2vh;
+        }
+        
+        .animal-row {
+            display: flex;
+            align-items: center;
+            background: #fdfdfd;
+            border: 2px solid #eee;
+            padding: 10px 30px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: scale(0.8);
+            animation: popBadge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        .animal-emoji { font-size: 3.5vw; margin-right: 20px; }
+        .animal-text { font-size: 2.2vw; font-weight: 800; color: var(--antraciet); }
+        
+        @keyframes popBadge { to { opacity: 1; transform: scale(1); } }
+
+        .distance-reveal { font-size: 2.2vw; font-weight: 700; color: var(--antraciet); margin-top: 2vh; opacity: 0; transition: opacity 1s; }
         .distance-reveal.show { opacity: 1; }
 
         /* RESULTS STYLING */
@@ -83,7 +106,7 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v4.3</div>
+    <div id="vTag">v4.4</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -410,6 +433,7 @@
             }
         }
 
+        // --- HERNIEUWDE START-ANALOGY FUNCTIE (Lijst Weergave) ---
         function startAnalogy(sessions) {
             const gender = sessionData.genders[0];
             
@@ -447,20 +471,25 @@
             const display = document.getElementById('animalDisplay');
             if(display) display.innerHTML = "";
             
-            const addAnimals = (count, icon, cls) => {
-                for(let i=0; i < Math.min(count, 40); i++) { 
-                    setTimeout(() => {
-                        let span = document.createElement('span'); 
-                        span.className = 'animal-icon ' + cls; 
-                        span.innerText = icon;
-                        if(display) display.appendChild(span);
-                    }, i * 80);
-                }
+            // Kolom 2 is NL naam, Kolom 3 is EN naam in de sheet
+            const nameIdx = sessionData.lang === 'en' ? 3 : 2; 
+
+            const addAnimalRow = (count, animalData, delayIndex) => {
+                if (count <= 0) return; // Toon alleen als we er minstens 1 hebben
+                setTimeout(() => {
+                    let row = document.createElement('div');
+                    row.className = 'animal-row';
+                    // Weergeven als: 🐘 12x Olifant
+                    row.innerHTML = `<span class="animal-emoji">${animalData[5]}</span><span class="animal-text">${count}x ${animalData[nameIdx]}</span>`;
+                    if(display) display.appendChild(row);
+                }, delayIndex * 500); 
             };
 
-            addAnimals(l_count, set.find(a => a[1] === 'large')[5], 'large');
-            addAnimals(m_count, set.find(a => a[1] === 'mid')[5], 'mid');
-            addAnimals(s_count, set.find(a => a[1] === 'small')[5], 'small');
+            let delayIdx = 0;
+            if (l_count > 0) addAnimalRow(l_count, set.find(a => a[1] === 'large'), delayIdx++);
+            if (m_count > 0) addAnimalRow(m_count, set.find(a => a[1] === 'mid'), delayIdx++);
+            // Laat de kleinste altijd zien als fallback, tenzij er al grotere zijn en de rest 0 is, maar we laten de kleine altijd zien als count > 0.
+            if (s_count > 0 || (l_count === 0 && m_count === 0)) addAnimalRow(s_count, set.find(a => a[1] === 'small'), delayIdx++);
 
             const meta = distanceMetaphors
                 .filter(m => m[0] === gender || m[0] === 'both')
@@ -475,7 +504,7 @@
                         `Dat heb je net zo ${meta[4]} als ${meta[1]}!`);
                     reveal.classList.add('show');
                 }
-            }, 4000);
+            }, 3000);
         }
 
         function animateAgeCount(s, e) {
