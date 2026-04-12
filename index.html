@@ -322,7 +322,7 @@
             const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             
             audioPrep.pause();
-            setTimeout(() => { if(!isRelaxedMode && currentBreathSize === 4) { audioBox.currentTime = 0; audioBox.play(); } else { audioPrep.play(); } }, 400);
+            setTimeout(() => { if(!isRelaxedMode && currentBreathSize === 4) { audioBox.currentTime = 0; audioBox.play(); } else { audioPrep.play(); } }, 550);
 
             // Stel CSS transitie tijd in (Default 4s, wordt 3s als op knop wordt gedrukt)
             bPie.style.setProperty('--circle-speed', `${currentBreathSize}s`);
