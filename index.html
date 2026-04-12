@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v5.5</title>
+    <title>fit20 Recovery v5.6</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,14 +23,20 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; min-height: 1.2em; transition: font-size 0.5s; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; transition: font-size 0.5s; }
 
-        /* JOURNEY & ANALOGY STYLING */
+        /* JOURNEY & ANALOGY STYLING (FIX B: Nummers en dots) */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         .road-base { position: absolute; height: 10px; background: #eee; left: 0; width: 100%; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 1; }
         .road-progress { position: absolute; height: 10px; background: var(--fit20-green); left: 0; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
-        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; z-index: 10; }
-        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); }
+        
+        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateX(-50%); top: 60%; z-index: 10; height: 10px; }
+        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: absolute; }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
+        .milestone-label { position: absolute; top: 25px; font-size: 1.1vw; font-weight: bold; color: #bbb; white-space: nowrap; transition: all 0.3s ease; }
+        .milestone.active-pop .milestone-label { color: var(--fit20-blue); font-size: 2.2vw; transform: scale(1.1); }
+        .milestone.reached:not(.active-pop) .milestone-label { color: var(--antraciet); }
+        .milestone-count { position: absolute; bottom: 25px; font-size: 0.9vw; color: #aaa; font-weight: bold; }
+
         .current-marker { position: absolute; left: 50%; top: 35%; width: 110px; height: 110px; background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .current-marker::after { content: ""; position: absolute; top: 100%; left: 50%; width: 4px; height: 120px; background: repeating-linear-gradient(to bottom, var(--fit20-blue), var(--fit20-blue) 5px, transparent 5px, transparent 10px); opacity: 0.4; transform: translateX(-50%); z-index: -1; }
         .marker-val { font-size: 3vw; font-weight: 900; line-height: 1; }
@@ -81,7 +87,7 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v5.5</div>
+    <div id="vTag">v5.6</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -123,7 +129,6 @@
         </div>
 
         <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
-        
         <div id="prepCountdown" class="hidden" style="font-size:15vw; font-weight:800; color:var(--fit20-green);"></div>
     </div>
 
@@ -170,6 +175,45 @@
         let currentBreathSize = 4;
         let breathingInterval = null;
         let isRelaxedMode = false;
+
+        // --- C) FADE AUDIO ENGINE ---
+        function crossfade(audioOut, audioIn, duration = 2000) {
+            if (audioIn) {
+                audioIn.volume = 1;
+                audioIn.play().catch(e=>console.log(e));
+            }
+            if (audioOut && !audioOut.paused) {
+                let vol = audioOut.volume;
+                const step = vol / (duration / 50); // we update every 50ms
+                const fadeInterval = setInterval(() => {
+                    vol -= step;
+                    if (vol <= 0) {
+                        audioOut.volume = 0;
+                        audioOut.pause();
+                        clearInterval(fadeInterval);
+                    } else {
+                        audioOut.volume = vol;
+                    }
+                }, 50);
+            }
+        }
+
+        function fadeOut(audioTarget, duration = 2000) {
+            if (audioTarget && !audioTarget.paused) {
+                let vol = audioTarget.volume;
+                const step = vol / (duration / 50);
+                const fadeInterval = setInterval(() => {
+                    vol -= step;
+                    if (vol <= 0) {
+                        audioTarget.volume = 0;
+                        audioTarget.pause();
+                        clearInterval(fadeInterval);
+                    } else {
+                        audioTarget.volume = vol;
+                    }
+                }, 50);
+            }
+        }
 
         function parseCSV(text) {
             if(!text || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) return [];
@@ -255,10 +299,12 @@
             return pick ? { title: pick[langIdx[0]], text: pick[langIdx[1]] } : { title: "", text: "" };
         }
 
+        // INIT AUDIO UNLOCK
         document.getElementById('startActionBtn').addEventListener('click', () => {
             isSessionActive = true;
-            audioPrep.play().then(() => audioPrep.pause());
-            audioBox.play().then(() => audioBox.pause());
+            audioPrep.volume = 1; audioPrep.play().then(() => audioPrep.pause());
+            audioBox.volume = 1; audioBox.play().then(() => audioBox.pause());
+            
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
@@ -268,12 +314,15 @@
 
         // --- INTERACTIE KNOPPEN ---
         document.getElementById('btn44').onclick = () => {};
+        
         document.getElementById('btn33').onclick = () => {
             isRelaxedMode = false; currentBreathSize = 3;
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('breathCircle').style.setProperty('--circle-speed', '3s');
             updateBreathUI('btn33'); updateBreathImage();
-            audioBox.pause(); audioPrep.play();
+            
+            // CROSSFADE: Box muziek uit, Prep muziek weer aan in 2 seconden
+            crossfade(audioBox, audioPrep, 2000);
         };
 
         document.getElementById('btnStop').onclick = () => {
@@ -281,7 +330,9 @@
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('btn33').disabled = true;
             updateBreathUI('btnStop');
-            audioBox.pause(); audioPrep.play();
+            
+            // CROSSFADE: Box muziek uit, Prep muziek weer aan in 2 seconden
+            crossfade(audioBox, audioPrep, 2000);
         };
 
         function updateBreathUI(activeId) {
@@ -362,7 +413,11 @@
 
                                 document.getElementById('valCal').innerText = cal;
                                 
-                                if (cal - fit < 1) {
+                                // FIX A: Dynamische Fit20 Age Threshold uitlezen uit sheet (of fallback naar 1)
+                                const minAgeSetting = analogySettings.find(s => s[0] === 'min_age_diff' && s[1] === sessionData.genders[0]);
+                                const minAgeDiff = minAgeSetting ? parseInt(minAgeSetting[2]) : 1;
+
+                                if (cal - fit < minAgeDiff) {
                                     meterContainer.classList.add('hidden');
                                     badge.style.clipPath = "none";
                                     badge.style.borderRadius = "30px";
@@ -406,8 +461,6 @@
                 if (activeSteps.includes('breathing')) {
                     let breathElapsed = elapsed - (stepStart * 1000);
                     if (breathElapsed < 30000) {
-                        
-                        // OPLOSSING ISSUE A: Forceer het verbergen van oude onderdelen bij directe sprong
                         if(timeline) timeline.classList.add('hidden');
                         if(analogy) analogy.classList.add('hidden');
                         if(results) results.classList.add('hidden');
@@ -420,13 +473,14 @@
                             prep.classList.remove('hidden');
                             prep.innerText = Math.ceil((30000 - breathElapsed) / 1000);
                         }
-                        if (audioPrep.paused) audioPrep.play();
+                        
+                        // Zorg dat de volume van prep audio 1 is, voor het geval hij uit-gefaded was
+                        if (audioPrep.paused) { audioPrep.volume = 1; audioPrep.play(); }
                         return;
                     } else {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
                         
-                        // OPLOSSING ISSUE B: Verberg de countdown timer zodat hij niet als '1' op eindscherm opduikt
                         const prep = document.getElementById('prepCountdown');
                         if (prep) prep.classList.add('hidden');
 
@@ -612,8 +666,16 @@
             let step = 1, phase = 0, total = 210;
             const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             
-            audioPrep.pause();
-            setTimeout(() => { if(!isRelaxedMode && currentBreathSize === 4) { audioBox.currentTime = 0; audioBox.play(); } else { audioPrep.play(); } }, 600);
+            // CROSSFADE: start Box Audio op 600ms, en fade Prep zachtjes uit in 2 sec
+            setTimeout(() => { 
+                if(!isRelaxedMode && currentBreathSize === 4) { 
+                    audioBox.currentTime = 0; 
+                    crossfade(audioPrep, audioBox, 2000); 
+                } else { 
+                    // Blijf rustige prep-muziek spelen
+                    if (audioPrep.paused) { audioPrep.volume = 1; audioPrep.play(); } 
+                } 
+            }, 600);
 
             bPie.style.setProperty('--circle-speed', `${currentBreathSize}s`);
 
@@ -631,14 +693,19 @@
                 if (phase === 2) bPie.style.transform = "scale(0.8)";
                 
                 if (step++ >= currentBreathSize) { step = 1; phase = (phase + 1) % 4; }
-                if (total-- <= 0) { clearInterval(breathingInterval); audioBox.pause(); audioPrep.pause(); showFinal(); }
+                if (total-- <= 0) { 
+                    clearInterval(breathingInterval); 
+                    // Einde oefening, fade alles uit
+                    fadeOut(audioBox, 2000);
+                    fadeOut(audioPrep, 2000);
+                    showFinal(); 
+                }
             }, 1000);
         }
 
         function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
             
-            // Fix B: Zorg dat de countdown timer niet zichtbaar blijft
             const prep = document.getElementById('prepCountdown');
             if (prep) prep.classList.add('hidden');
 
@@ -660,6 +727,10 @@
                 p.style.background = "var(--light-gray)"; 
             }
             if(fc) fc.innerText = "✓";
+            
+            // Muziek uitfaden als er handmatig op stop gedrukt is en we direct naar final gaan
+            fadeOut(audioPrep, 2000);
+            fadeOut(audioBox, 2000);
             
             setTimeout(() => location.reload(), 30000);
         }
