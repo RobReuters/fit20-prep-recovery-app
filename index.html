@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v5.4</title>
+    <title>fit20 Recovery v5.5</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,7 +60,7 @@
         .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-shrink: 0; }
         .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
 
-        /* BREATHING CONTROLS (Groot & Links Uitgelijnd) */
+        /* BREATHING CONTROLS */
         .breath-controls { margin-top: 5vh; display: flex; gap: 20px; z-index: 1000; transition: opacity 0.5s; width: 100%; justify-content: flex-start; padding-left: 10vw; }
         .breath-btn { padding: 18px 45px; border-radius: 50px; border: 3px solid var(--fit20-blue); background: white; color: var(--fit20-blue); font-weight: 800; font-size: 1.8vw; cursor: pointer; transition: all 0.3s; }
         .breath-btn.active { background: var(--fit20-blue); color: white; }
@@ -72,7 +72,6 @@
         #breathingVisuals { display:flex; width:100%; align-items:center; justify-content: center; gap: 5vw; transition: opacity 0.5s, transform 0.5s; }
         #breathingVisuals.fade-out { opacity: 0; transform: translateY(20px); pointer-events: none; }
         
-        /* Cirkel - Flex-shrink 0 toegevoegd om platdrukken te voorkomen */
         .visual-circle { width: 280px; height: 280px; min-width: 280px; min-height: 280px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); transition: transform var(--circle-speed, 4s) linear; flex-shrink: 0; }
         .visual-circle::after { content: ""; width: 230px; height: 230px; background: white; border-radius: 50%; position: absolute; z-index: 1; flex-shrink: 0; }
         .circle-number { z-index: 10; font-size: 90px; font-weight: 800; color: var(--fit20-green); position: relative; }
@@ -82,7 +81,7 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v5.4</div>
+    <div id="vTag">v5.5</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -124,6 +123,7 @@
         </div>
 
         <div class="visual-circle" id="flowCircle"><div class="circle-number" id="flowCircleContent"></div></div>
+        
         <div id="prepCountdown" class="hidden" style="font-size:15vw; font-weight:800; color:var(--fit20-green);"></div>
     </div>
 
@@ -362,7 +362,6 @@
 
                                 document.getElementById('valCal').innerText = cal;
                                 
-                                // FIX F: Als verschil minder dan 1 jaar is (of negatief)
                                 if (cal - fit < 1) {
                                     meterContainer.classList.add('hidden');
                                     badge.style.clipPath = "none";
@@ -407,6 +406,12 @@
                 if (activeSteps.includes('breathing')) {
                     let breathElapsed = elapsed - (stepStart * 1000);
                     if (breathElapsed < 30000) {
+                        
+                        // OPLOSSING ISSUE A: Forceer het verbergen van oude onderdelen bij directe sprong
+                        if(timeline) timeline.classList.add('hidden');
+                        if(analogy) analogy.classList.add('hidden');
+                        if(results) results.classList.add('hidden');
+
                         title.innerText = currentLabels.prep_title || "Bereid je voor..."; 
                         sub.innerText = currentLabels.prep_sub || "Ontspan je schouders.";
                         pie.classList.add('hidden'); 
@@ -420,6 +425,11 @@
                     } else {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
+                        
+                        // OPLOSSING ISSUE B: Verberg de countdown timer zodat hij niet als '1' op eindscherm opduikt
+                        const prep = document.getElementById('prepCountdown');
+                        if (prep) prep.classList.add('hidden');
+
                         document.getElementById('breathingArea').classList.remove('hidden');
                         startBreathing(); return;
                     }
@@ -438,7 +448,6 @@
             let journeyCol = 3;
             if (total > j3_max) journeyCol = 6; else if (total > j2_max) journeyCol = 5; else if (total > j1_max) journeyCol = 4;
 
-            // FIX D: Filter headers weg en forceer start bij 0
             let activeMilestones = milestoneDataRaw.filter(ms => ms[journeyCol] && ms[journeyCol].toLowerCase() === 'x' && !isNaN(parseInt(ms[0])));
             if (activeMilestones.length === 0 || parseInt(activeMilestones[0][0]) !== 0) {
                 activeMilestones.unshift(["0", currentLabels.start_label || "Start", currentLabels.start_label || "Start", "x", "x", "x", "x"]);
@@ -548,14 +557,12 @@
             if (m_count > 0) addAnimalRow(m_count, set.find(a => a[1] === 'mid'), delayIdx++);
             if (s_count > 0 || (l_count === 0 && m_count === 0)) addAnimalRow(s_count, set.find(a => a[1] === 'small'), delayIdx++);
 
-            // FIX E: Voorkom header text bug bij zeer lage afstand
             const validMetas = distanceMetaphors.filter(m => !isNaN(parseInt(m[3])) && parseInt(m[3]) > 0);
             let meta = validMetas
                 .filter(m => m[0] === gender || m[0] === 'both')
                 .filter(m => parseInt(m[3]) <= totalMeters)
                 .sort((a,b) => b[3] - a[3])[0];
             
-            // Fallback naar de kleinste als er nog niks bereikt is
             if(!meta) meta = validMetas.filter(m => m[0] === gender || m[0] === 'both').sort((a,b) => a[3] - b[3])[0];
             
             if(meta) {
@@ -630,6 +637,11 @@
 
         function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
+            
+            // Fix B: Zorg dat de countdown timer niet zichtbaar blijft
+            const prep = document.getElementById('prepCountdown');
+            if (prep) prep.classList.add('hidden');
+
             const area = document.getElementById('actionArea');
             if(area) { area.classList.remove('hidden'); area.classList.remove('reveal-active'); }
             document.getElementById('timelineArea').classList.add('hidden');
@@ -639,7 +651,6 @@
             document.getElementById('mainTitle').innerText = (currentLabels.end_title || "Bedankt").replace('{user}', sessionData.user);
             document.getElementById('mainSubContainer').innerText = currentLabels.end_sub || "Tot volgende week!";
             
-            // FIX C: Eindscherm platte cirkel gerepareerd
             const p = document.getElementById('flowCircle'); 
             const fc = document.getElementById('flowCircleContent');
             if(p) { 
