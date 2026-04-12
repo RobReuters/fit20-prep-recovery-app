@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v5.3</title>
+    <title>fit20 Recovery v5.4</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,36 +57,32 @@
 
         /* RESULTS STYLING */
         #resultsArea { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; }
-        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .age-badge { background: var(--fit20-blue); color: white; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; clip-path: polygon(100% 50%, 94% 63%, 94% 77%, 82% 82%, 77% 94%, 63% 94%, 50% 100%, 37% 94%, 23% 94%, 18% 82%, 6% 77%, 6% 63%, 0% 50%, 6% 37%, 6% 23%, 18% 18%, 23% 6%, 37% 6%, 50% 0%, 63% 6%, 77% 6%, 82% 18%, 94% 23%, 94% 37%); font-size: 1.8vw; font-weight: 800; padding: 45px; text-align: center; opacity: 0; transform: scale(0.5) rotate(-15deg); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-shrink: 0; }
         .age-badge.show { opacity: 1; transform: scale(1) rotate(0deg); }
 
-        /* BREATHING CONTROLS */
-        .breath-controls { margin-top: 4vh; display: flex; gap: 20px; z-index: 1000; transition: opacity 0.5s; }
-        .breath-btn { padding: 12px 35px; border-radius: 40px; border: 2px solid var(--fit20-blue); background: white; color: var(--fit20-blue); font-weight: 800; font-size: 1.4vw; cursor: pointer; transition: all 0.3s; }
+        /* BREATHING CONTROLS (Groot & Links Uitgelijnd) */
+        .breath-controls { margin-top: 5vh; display: flex; gap: 20px; z-index: 1000; transition: opacity 0.5s; width: 100%; justify-content: flex-start; padding-left: 10vw; }
+        .breath-btn { padding: 18px 45px; border-radius: 50px; border: 3px solid var(--fit20-blue); background: white; color: var(--fit20-blue); font-weight: 800; font-size: 1.8vw; cursor: pointer; transition: all 0.3s; }
         .breath-btn.active { background: var(--fit20-blue); color: white; }
         .breath-btn.stop { border-color: #999; color: #999; }
-        
-        /* Knop-statussen */
         .breath-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #ccc; color: #ccc; }
         .btn-hidden { display: none !important; }
-
         .hidden { display: none !important; }
         
         #breathingVisuals { display:flex; width:100%; align-items:center; justify-content: center; gap: 5vw; transition: opacity 0.5s, transform 0.5s; }
         #breathingVisuals.fade-out { opacity: 0; transform: translateY(20px); pointer-events: none; }
         
-        /* Dynamische cirkel-animatie op basis van JS variabele (--circle-speed) */
-        .visual-circle { width: 300px; height: 300px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); transition: transform var(--circle-speed, 4s) linear; }
-        .visual-circle::after { content: ""; width: 250px; height: 250px; background: white; border-radius: 50%; position: absolute; z-index: 1; }
-        .circle-number { z-index: 10; font-size: 100px; font-weight: 800; color: var(--fit20-green); position: relative; }
+        /* Cirkel - Flex-shrink 0 toegevoegd om platdrukken te voorkomen */
+        .visual-circle { width: 280px; height: 280px; min-width: 280px; min-height: 280px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; background: var(--light-gray); transition: transform var(--circle-speed, 4s) linear; flex-shrink: 0; }
+        .visual-circle::after { content: ""; width: 230px; height: 230px; background: white; border-radius: 50%; position: absolute; z-index: 1; flex-shrink: 0; }
+        .circle-number { z-index: 10; font-size: 90px; font-weight: 800; color: var(--fit20-green); position: relative; }
         
-        /* Vrij Ademen Tekst Styles */
         .relaxed-text-active #breathTitle { font-size: 6vw; margin-bottom: 2vh; color: var(--fit20-blue); }
         .relaxed-text-active #breathSub { font-size: 2.5vw; color: #555; }
     </style>
 </head>
 <body>
-    <div id="vTag">v5.3</div>
+    <div id="vTag">v5.4</div>
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -154,7 +150,6 @@
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?single=true&output=csv&gid=';
         
-        // JOUW GIDS
         const GIDS = { 
             content: '0', 
             labels: '583309678', 
@@ -215,8 +210,6 @@
             setTxt('markerLab', 'sessions_label', sessionData.lang === 'en' ? "Sessions" : "Sessies");
             setTxt('labelFit', 'fit_age_label', "fit20 Age");
             setTxt('labelCal', 'calendar_label', sessionData.lang === 'en' ? "Calendar" : "Kalender");
-            
-            // Fix voor Vrij Ademen knop taal uit de sheet
             setTxt('btnStop', 'btn_free_breathe', "Vrij ademen");
         }
 
@@ -240,12 +233,15 @@
                     const userEl = document.getElementById('userName');
                     if(userEl) userEl.innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo ") + sessionData.user;
                     
+                    const msgEl = document.getElementById('personalMsg');
+                    if(msgEl) msgEl.innerText = currentLabels.ready_msg || (sessionData.lang === 'en' ? "Ready to start?" : "Klaar voor de start?");
+                    
                     const btn = document.getElementById('startActionBtn');
                     if(btn) btn.classList.remove('hidden');
                     
                     ["a","b","c","d","e","f","g","h","i","j"].forEach(cat => preSelectedTexts[cat] = pickStaticText(cat));
                     
-                    updateBreathImage(); // Pre-load afbeelding
+                    updateBreathImage();
 
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
                 }
@@ -271,37 +267,26 @@
         });
 
         // --- INTERACTIE KNOPPEN ---
-        document.getElementById('btn44').onclick = () => {
-            // Verdwijnt als men op 3 of Stop drukt, kan alleen actief zijn bij start.
-        };
-
+        document.getElementById('btn44').onclick = () => {};
         document.getElementById('btn33').onclick = () => {
-            isRelaxedMode = false; 
-            currentBreathSize = 3;
+            isRelaxedMode = false; currentBreathSize = 3;
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('breathCircle').style.setProperty('--circle-speed', '3s');
-            
-            updateBreathUI('btn33');
-            updateBreathImage();
-            
-            audioBox.pause(); 
-            audioPrep.play();
+            updateBreathUI('btn33'); updateBreathImage();
+            audioBox.pause(); audioPrep.play();
         };
 
         document.getElementById('btnStop').onclick = () => {
             isRelaxedMode = true;
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('btn33').disabled = true;
-            
             updateBreathUI('btnStop');
-            audioBox.pause(); 
-            audioPrep.play();
+            audioBox.pause(); audioPrep.play();
         };
 
         function updateBreathUI(activeId) {
             document.querySelectorAll('.breath-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(activeId).classList.add('active');
-            
             if (isRelaxedMode) {
                 document.getElementById('breathingVisuals').classList.add('fade-out');
                 document.getElementById('breathingArea').classList.add('relaxed-text-active');
@@ -366,13 +351,38 @@
                             results.classList.remove('hidden');
                             title.innerText = currentLabels.results_title || "Resultaten"; 
                             sub.innerText = currentLabels.results_sub || "";
-                            document.getElementById('valCal').innerText = sessionData.calAge;
-                            if (document.getElementById('meterFill').style.width !== "100%") {
-                                setTimeout(() => { 
-                                    const fill = document.getElementById('meterFill');
-                                    if(fill) fill.style.width = "100%"; 
-                                    animateAgeCount(parseInt(sessionData.calAge), parseInt(sessionData.fitAge)); 
-                                }, 100);
+                            
+                            if (document.getElementById('meterFill') && !results.dataset.started) {
+                                results.dataset.started = "true";
+                                
+                                let cal = parseInt(sessionData.calAge);
+                                let fit = parseInt(sessionData.fitAge);
+                                let meterContainer = document.querySelector('.meter-container');
+                                let badge = document.getElementById('ageDiffBadge');
+
+                                document.getElementById('valCal').innerText = cal;
+                                
+                                // FIX F: Als verschil minder dan 1 jaar is (of negatief)
+                                if (cal - fit < 1) {
+                                    meterContainer.classList.add('hidden');
+                                    badge.style.clipPath = "none";
+                                    badge.style.borderRadius = "30px";
+                                    badge.style.width = "80%";
+                                    badge.style.height = "auto";
+                                    badge.style.padding = "4vw";
+                                    badge.style.fontSize = "3vw";
+                                    badge.style.transform = "scale(0.5)"; 
+                                    badge.innerText = currentLabels.age_equal_msg || "Je traint nu al op het niveau van iemand van jouw leeftijd!";
+                                    
+                                    setTimeout(() => { badge.style.transform = "scale(1)"; badge.style.opacity = "1"; }, 100);
+                                } else {
+                                    meterContainer.classList.remove('hidden');
+                                    setTimeout(() => { 
+                                        const fill = document.getElementById('meterFill');
+                                        if(fill) fill.style.width = "100%"; 
+                                        animateAgeCount(cal, fit); 
+                                    }, 100);
+                                }
                             }
                         }
                         return;
@@ -428,7 +438,12 @@
             let journeyCol = 3;
             if (total > j3_max) journeyCol = 6; else if (total > j2_max) journeyCol = 5; else if (total > j1_max) journeyCol = 4;
 
-            const activeMilestones = milestoneDataRaw.filter(ms => ms[journeyCol] && ms[journeyCol].toLowerCase() === 'x');
+            // FIX D: Filter headers weg en forceer start bij 0
+            let activeMilestones = milestoneDataRaw.filter(ms => ms[journeyCol] && ms[journeyCol].toLowerCase() === 'x' && !isNaN(parseInt(ms[0])));
+            if (activeMilestones.length === 0 || parseInt(activeMilestones[0][0]) !== 0) {
+                activeMilestones.unshift(["0", currentLabels.start_label || "Start", currentLabels.start_label || "Start", "x", "x", "x", "x"]);
+            }
+
             let lastMilestoneName = "", triggeredIdx = -1;
 
             track.innerHTML = '<div class="road-base"></div><div class="road-progress" id="roadFill"></div>';
@@ -485,7 +500,6 @@
 
         function startAnalogy(sessions) {
             const gender = sessionData.genders[0];
-            
             const weightSetting = analogySettings.find(s => s[0] === 'avg_weight_per_session' && s[1] === gender);
             const distSetting = analogySettings.find(s => s[0] === 'avg_dist_per_session' && s[1] === gender);
             const weightPerSession = weightSetting ? parseFloat(weightSetting[2]) : (gender === 'v' ? 252.5 : 312.5);
@@ -495,15 +509,6 @@
             const totalMeters = Math.round(sessions * distPerSession);
 
             const set = animalSets.filter(a => a[0] === gender);
-            if (set.length < 3) {
-                set.push(["v", "large", "Dwergvinvis", "Minke Whale", "5000", "🐋"]);
-                set.push(["v", "mid", "Dolfijn", "Dolphin", "300", "🐬"]);
-                set.push(["v", "small", "Gazelle", "Gazelle", "50", "🦌"]);
-                set.push(["m", "large", "Olifant", "Elephant", "5000", "🐘"]);
-                set.push(["m", "mid", "Neushoorn", "Rhino", "2000", "🦏"]);
-                set.push(["m", "small", "Gorilla", "Gorilla", "200", "🦍"]);
-            }
-
             const l_kg = parseInt((set.find(a => a[1] === 'large') || [])[4] || 5000);
             const m_kg = parseInt((set.find(a => a[1] === 'mid') || [])[4] || 300);
             const s_kg = parseInt((set.find(a => a[1] === 'small') || [])[4] || 50);
@@ -526,7 +531,6 @@
 
             const display = document.getElementById('animalDisplay');
             if(display) display.innerHTML = "";
-            
             const nameIdx = sessionData.lang === 'en' ? 3 : 2; 
 
             const addAnimalRow = (count, animalData, delayIndex) => {
@@ -544,16 +548,20 @@
             if (m_count > 0) addAnimalRow(m_count, set.find(a => a[1] === 'mid'), delayIdx++);
             if (s_count > 0 || (l_count === 0 && m_count === 0)) addAnimalRow(s_count, set.find(a => a[1] === 'small'), delayIdx++);
 
-            const meta = distanceMetaphors
+            // FIX E: Voorkom header text bug bij zeer lage afstand
+            const validMetas = distanceMetaphors.filter(m => !isNaN(parseInt(m[3])) && parseInt(m[3]) > 0);
+            let meta = validMetas
                 .filter(m => m[0] === gender || m[0] === 'both')
                 .filter(m => parseInt(m[3]) <= totalMeters)
-                .sort((a,b) => b[3] - a[3])[0] || distanceMetaphors[0];
+                .sort((a,b) => b[3] - a[3])[0];
+            
+            // Fallback naar de kleinste als er nog niks bereikt is
+            if(!meta) meta = validMetas.filter(m => m[0] === gender || m[0] === 'both').sort((a,b) => a[3] - b[3])[0];
             
             if(meta) {
                 const metaDist = parseInt(meta[3]);
                 let mult = totalMeters / metaDist;
-                let multStrEN = "";
-                let multStrNL = "";
+                let multStrEN = "", multStrNL = "";
                 
                 if (mult >= 1.1) {
                     let fmtEN = mult.toFixed(1).replace('.0', '');
@@ -592,23 +600,13 @@
             }, 80);
         }
 
-        // --- ADEMHALING LOGICA MET AUDIO SYNC (600ms) ---
         function startBreathing() {
             const bTitle = document.getElementById('breathTitle'), bSub = document.getElementById('breathSub'), bPie = document.getElementById('breathCircle'), bContent = document.getElementById('breathCircleContent');
             let step = 1, phase = 0, total = 210;
             const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             
             audioPrep.pause();
-            
-            // DE VERTRAGING ZIT HIER (600ms)
-            setTimeout(() => { 
-                if(!isRelaxedMode && currentBreathSize === 4) { 
-                    audioBox.currentTime = 0; 
-                    audioBox.play(); 
-                } else { 
-                    audioPrep.play(); 
-                } 
-            }, 600);
+            setTimeout(() => { if(!isRelaxedMode && currentBreathSize === 4) { audioBox.currentTime = 0; audioBox.play(); } else { audioPrep.play(); } }, 600);
 
             bPie.style.setProperty('--circle-speed', `${currentBreathSize}s`);
 
@@ -622,7 +620,6 @@
                 }
                 
                 bContent.innerText = step;
-                
                 if (phase === 0) bPie.style.transform = "scale(1.3)";
                 if (phase === 2) bPie.style.transform = "scale(0.8)";
                 
@@ -634,16 +631,25 @@
         function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
             const area = document.getElementById('actionArea');
-            if(area) {
-                area.classList.remove('hidden'); area.classList.remove('reveal-active');
-            }
-            const timeline = document.getElementById('timelineArea'); if(timeline) timeline.classList.add('hidden');
-            const resArea = document.getElementById('resultsArea'); if(resArea) resArea.classList.add('hidden');
-            const mainT = document.getElementById('mainTitle'); if(mainT) mainT.innerText = (currentLabels.end_title || "").replace('{user}', sessionData.user);
-            const mainS = document.getElementById('mainSubContainer'); if(mainS) mainS.innerText = currentLabels.end_sub;
+            if(area) { area.classList.remove('hidden'); area.classList.remove('reveal-active'); }
+            document.getElementById('timelineArea').classList.add('hidden');
+            document.getElementById('resultsArea').classList.add('hidden');
+            document.getElementById('analogyArea').classList.add('hidden');
+            
+            document.getElementById('mainTitle').innerText = (currentLabels.end_title || "Bedankt").replace('{user}', sessionData.user);
+            document.getElementById('mainSubContainer').innerText = currentLabels.end_sub || "Tot volgende week!";
+            
+            // FIX C: Eindscherm platte cirkel gerepareerd
             const p = document.getElementById('flowCircle'); 
-            if(p) { p.classList.remove('hidden'); p.className="visual-circle"; p.style.background="var(--light-gray)"; p.style.transform="none"; }
-            const fc = document.getElementById('flowCircleContent'); if(fc) fc.innerText = "✓";
+            const fc = document.getElementById('flowCircleContent');
+            if(p) { 
+                p.classList.remove('hidden'); 
+                p.className = "visual-circle"; 
+                p.style.transform = "none"; 
+                p.style.background = "var(--light-gray)"; 
+            }
+            if(fc) fc.innerText = "✓";
+            
             setTimeout(() => location.reload(), 30000);
         }
 
