@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v5.7</title>
+    <title>fit20 Recovery v5.8</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,20 +23,25 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; min-height: 1.2em; transition: font-size 0.5s; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; transition: font-size 0.5s; }
 
-        /* VOLUME CONTROLS (Nieuw v5.7) */
-        #volumeControls { position: fixed; top: 3vh; right: 3vw; display: flex; gap: 15px; z-index: 2000; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(5px); }
+        /* VOLUME CONTROLS (v5.8: Extra witte ruimte via gap: 30px) */
+        #volumeControls { position: fixed; top: 3vh; right: 3vw; display: flex; gap: 30px; z-index: 2000; background: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(5px); }
         .vol-btn { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--fit20-blue); background: white; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--fit20-blue); transition: all 0.2s; }
         .vol-btn.active { background: var(--fit20-blue); color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,157,244,0.4); }
         .vol-btn:active { transform: scale(0.9); }
 
-        /* JOURNEY & ANALOGY STYLING */
+        /* JOURNEY & ANALOGY STYLING (FIX F: Cijfertjes positie strak gezet) */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         .road-base { position: absolute; height: 10px; background: #eee; left: 0; width: 100%; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 1; }
         .road-progress { position: absolute; height: 10px; background: var(--fit20-green); left: 0; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
-        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; z-index: 10; }
-        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); }
+        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateX(-50%); top: 60%; z-index: 10; height: 10px; }
+        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: absolute; }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
+        .milestone-label { position: absolute; top: 25px; font-size: 1.1vw; font-weight: bold; color: #bbb; white-space: nowrap; transition: all 0.3s ease; }
+        .milestone.active-pop .milestone-label { color: var(--fit20-blue); font-size: 2.2vw; transform: scale(1.1); }
+        .milestone.reached:not(.active-pop) .milestone-label { color: var(--antraciet); }
+        .milestone-count { position: absolute; top: -35px; font-size: 0.9vw; color: #aaa; font-weight: bold; }
+
         .current-marker { position: absolute; left: 50%; top: 35%; width: 110px; height: 110px; background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .current-marker::after { content: ""; position: absolute; top: 100%; left: 50%; width: 4px; height: 120px; background: repeating-linear-gradient(to bottom, var(--fit20-blue), var(--fit20-blue) 5px, transparent 5px, transparent 10px); opacity: 0.4; transform: translateX(-50%); z-index: -1; }
         .marker-val { font-size: 3vw; font-weight: 900; line-height: 1; }
@@ -87,13 +92,13 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v5.7</div>
+    <div id="vTag">v5.8</div>
     
     <div id="volumeControls" class="hidden">
         <div class="vol-btn" id="vol-mute">🔇</div>
-        <div class="vol-btn" id="vol-soft">🔉</div>
-        <div class="vol-btn active" id="vol-normal">🔊</div>
-        <div class="vol-btn" id="vol-loud">📢</div>
+        <div class="vol-btn" id="vol-soft">🔈</div>
+        <div class="vol-btn active" id="vol-normal">🔉</div>
+        <div class="vol-btn" id="vol-loud">🔊</div>
     </div>
 
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
@@ -172,7 +177,7 @@
             distance: '1614390821' 
         };
 
-        // --- AUDIO ENGINE v5.7 ---
+        // --- AUDIO ENGINE ---
         let volMute = 0.0, volSoft = 0.3, volNormal = 0.7, volLoud = 1.0;
         let currentVolState = 'normal';
         let activeAudio = null;
@@ -209,25 +214,24 @@
             if (activeAudio) activeAudio.volume = getTargetVolume();
         }
 
-        // Volume knoppen Events
         document.getElementById('vol-mute').onclick = () => setGlobalVolume('mute');
         document.getElementById('vol-soft').onclick = () => setGlobalVolume('soft');
         document.getElementById('vol-normal').onclick = () => setGlobalVolume('normal');
         document.getElementById('vol-loud').onclick = () => setGlobalVolume('loud');
 
-        function crossfade(audioOut, audioIn, duration = 2000) {
+        // FIX D: Fade duration naar 1500ms gezet voor een responsiever, vloeiender gevoel
+        function crossfade(audioOut, audioIn, duration = 1500) {
             let targetVol = getTargetVolume();
             
             if (audioIn) {
                 audioIn.volume = 0;
                 audioIn.play().catch(e=>console.log(e));
-                activeAudio = audioIn; // Set as global active
+                activeAudio = audioIn; 
                 
                 let volIn = 0;
                 const stepIn = targetVol / (duration / 50);
                 const fadeIntervalIn = setInterval(() => {
                     volIn += stepIn;
-                    // Check of state is veranderd tijdens faden (bijv user klikt mute)
                     let currentTarget = getTargetVolume(); 
                     if (volIn >= currentTarget) {
                         audioIn.volume = currentTarget;
@@ -254,7 +258,7 @@
             }
         }
 
-        function fadeOut(audioTarget, duration = 2000) {
+        function fadeOut(audioTarget, duration = 1500) {
             if (audioTarget && !audioTarget.paused) {
                 let volOut = audioTarget.volume;
                 const stepOut = volOut / (duration / 50);
@@ -271,7 +275,6 @@
             }
         }
 
-        // --- REST VAN STATE EN DATA ---
         let reservoir = [], labelsRaw = [], milestoneDataRaw = [], analogySettings = [], animalSets = [], distanceMetaphors = [];
         let sessionData = { lang: 'nl', showFitAge: true };
         let isSessionActive = false, currentLabels = {}, preSelectedTexts = {};
@@ -280,7 +283,6 @@
         let breathingInterval = null;
         let isRelaxedMode = false;
         
-        // Track welke audio al gefade is
         let audioPlayed = { p1: false, p2: false, p3: false, p4prep: false, p4box: false, p5: false };
 
         function parseCSV(text) {
@@ -298,7 +300,7 @@
                 analogySettings = parseCSV(results[3]); animalSets = parseCSV(results[4]); distanceMetaphors = parseCSV(results[5]);
                 if (distanceMetaphors.length === 0) distanceMetaphors = [["both", "een Olympisch zwembad", "an Olympic pool", "50", "de lengte van", "the length of"]];
                 
-                applyVolumeSettings(); // Nieuw: haal volumes uit sheet
+                applyVolumeSettings(); 
                 updateUILanguage();
             } catch (e) { console.error(e); }
         }
@@ -334,12 +336,14 @@
                     const msgEl = document.getElementById('personalMsg');
                     if(msgEl) msgEl.innerText = currentLabels.ready_msg || (sessionData.lang === 'en' ? "Ready to start?" : "Klaar voor de start?");
                     
-                    // Audio 1 dynamisch koppelen aan doel
+                    // FIX E: Load nieuwe audio source dwingend in de browser cache
                     if (sessionData.profiles && sessionData.profiles.length > 0) {
                         const chosenGoal = sessionData.profiles[Math.floor(Math.random() * sessionData.profiles.length)];
                         audio1.src = goalAudioMap[chosenGoal] || '1A.mp3';
+                        audio1.load(); 
                     } else {
                         audio1.src = '1A.mp3';
+                        audio1.load();
                     }
 
                     document.getElementById('startActionBtn').classList.remove('hidden');
@@ -359,10 +363,9 @@
 
         document.getElementById('startActionBtn').addEventListener('click', () => {
             isSessionActive = true;
-            // Unlock alle audio streams in browser
             [audio1, audio2, audio3, audioPrep, audioBox, audio5].forEach(a => { a.volume = 0; a.play().then(() => a.pause()).catch(e=>console.log(e)); });
             
-            document.getElementById('volumeControls').classList.remove('hidden'); // Toon volume knoppen
+            document.getElementById('volumeControls').classList.remove('hidden');
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
@@ -370,14 +373,13 @@
             runMasterFlow();
         });
 
-        // --- INTERACTIE KNOPPEN ---
         document.getElementById('btn44').onclick = () => {};
         document.getElementById('btn33').onclick = () => {
             isRelaxedMode = false; currentBreathSize = 3;
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('breathCircle').style.setProperty('--circle-speed', '3s');
             updateBreathUI('btn33'); updateBreathImage();
-            crossfade(audioBox, audioPrep, 2000); // Crossfade terug naar prep
+            crossfade(audioBox, audioPrep, 1500); 
         };
 
         document.getElementById('btnStop').onclick = () => {
@@ -385,7 +387,7 @@
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('btn33').disabled = true;
             updateBreathUI('btnStop');
-            crossfade(audioBox, audioPrep, 2000); // Crossfade terug naar prep
+            crossfade(audioBox, audioPrep, 1500);
         };
 
         function updateBreathUI(activeId) {
@@ -420,10 +422,8 @@
             const masterInt = setInterval(() => {
                 let elapsed = Date.now() - start, stepStart = 0;
                 
-                // 1. RECOVERY
                 if (activeSteps.includes('recovery')) {
                     if (!audioPlayed.p1) { crossfade(activeAudio, audio1); audioPlayed.p1 = true; }
-                    
                     if (elapsed < 180000) {
                         const cat = ["a","b","c","d","e","f"][Math.floor(elapsed / 30000)];
                         title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
@@ -433,40 +433,28 @@
                     stepStart += 180;
                 }
 
-                // 2. RESULTS
                 if (activeSteps.includes('results')) {
                     if (!audioPlayed.p2) { crossfade(activeAudio, audio2); audioPlayed.p2 = true; }
-
                     let resElapsed = elapsed - (stepStart * 1000);
                     if (resElapsed < 60000) {
                         pie.classList.add('hidden');
-                        
                         if (resElapsed < phase1Time) {
                             title.innerText = sessionData.lang === 'en' ? "Your fit20 Journey" : "Jouw fit20 Reis";
                             sub.innerText = sessionData.lang === 'en' ? "Consistency is the foundation of strength." : "Consistentie is het fundament van kracht.";
                             timeline.classList.remove('hidden');
                             if (!timeline.dataset.started) { startAdaptiveJourney(parseInt(sessionData.totalSessions || 0)); timeline.dataset.started = "true"; }
-                        
                         } else if (resElapsed < phase2Time) {
-                            timeline.classList.add('hidden');
-                            analogy.classList.remove('hidden');
+                            timeline.classList.add('hidden'); analogy.classList.remove('hidden');
                             title.innerText = sessionData.lang === 'en' ? "Total Volume Moved" : "Totaal Verplaatst Volume";
                             sub.innerText = sessionData.lang === 'en' ? "Every training adds up to incredible power." : "Elke training telt op tot ongelofelijke kracht.";
                             if (!analogy.dataset.started) { startAnalogy(parseInt(sessionData.totalSessions || 0)); analogy.dataset.started = "true"; }
-                        
                         } else if (showFitAge) {
-                            analogy.classList.add('hidden'); 
-                            results.classList.remove('hidden');
-                            title.innerText = currentLabels.results_title || "Resultaten"; 
-                            sub.innerText = currentLabels.results_sub || "";
-                            
+                            analogy.classList.add('hidden'); results.classList.remove('hidden');
+                            title.innerText = currentLabels.results_title || "Resultaten"; sub.innerText = currentLabels.results_sub || "";
                             if (document.getElementById('meterFill') && !results.dataset.started) {
                                 results.dataset.started = "true";
-                                
-                                let cal = parseInt(sessionData.calAge);
-                                let fit = parseInt(sessionData.fitAge);
-                                let meterContainer = document.querySelector('.meter-container');
-                                let badge = document.getElementById('ageDiffBadge');
+                                let cal = parseInt(sessionData.calAge), fit = parseInt(sessionData.fitAge);
+                                let meterContainer = document.querySelector('.meter-container'), badge = document.getElementById('ageDiffBadge');
                                 document.getElementById('valCal').innerText = cal;
                                 
                                 const minAgeSetting = analogySettings.find(s => s[0] === 'min_age_diff' && s[1] === sessionData.genders[0]);
@@ -474,22 +462,12 @@
 
                                 if (cal - fit < minAgeDiff) {
                                     meterContainer.classList.add('hidden');
-                                    badge.style.clipPath = "none";
-                                    badge.style.borderRadius = "30px";
-                                    badge.style.width = "80%";
-                                    badge.style.height = "auto";
-                                    badge.style.padding = "4vw";
-                                    badge.style.fontSize = "3vw";
-                                    badge.style.transform = "scale(0.5)"; 
+                                    badge.style.clipPath = "none"; badge.style.borderRadius = "30px"; badge.style.width = "80%"; badge.style.height = "auto"; badge.style.padding = "4vw"; badge.style.fontSize = "3vw"; badge.style.transform = "scale(0.5)"; 
                                     badge.innerText = currentLabels.age_equal_msg || "Je traint nu al op het niveau van iemand van jouw leeftijd!";
                                     setTimeout(() => { badge.style.transform = "scale(1)"; badge.style.opacity = "1"; }, 100);
                                 } else {
                                     meterContainer.classList.remove('hidden');
-                                    setTimeout(() => { 
-                                        const fill = document.getElementById('meterFill');
-                                        if(fill) fill.style.width = "100%"; 
-                                        animateAgeCount(cal, fit); 
-                                    }, 100);
+                                    setTimeout(() => { const fill = document.getElementById('meterFill'); if(fill) fill.style.width = "100%"; animateAgeCount(cal, fit); }, 100);
                                 }
                             }
                         }
@@ -498,10 +476,8 @@
                     stepStart += 60;
                 }
                 
-                // 3. SCIENCE
                 if (activeSteps.includes('science')) {
                     if (!audioPlayed.p3) { crossfade(activeAudio, audio3); audioPlayed.p3 = true; }
-
                     let sciElapsed = elapsed - (stepStart * 1000);
                     if (sciElapsed < 120000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden'); analogy.classList.add('hidden'); timeline.classList.add('hidden');
@@ -513,32 +489,22 @@
                     stepStart += 120;
                 }
                 
-                // 4. BREATHING
                 if (activeSteps.includes('breathing')) {
                     if (!audioPlayed.p4prep) { crossfade(activeAudio, audioPrep); audioPlayed.p4prep = true; }
-
                     let breathElapsed = elapsed - (stepStart * 1000);
                     if (breathElapsed < 30000) {
                         if(timeline) timeline.classList.add('hidden');
                         if(analogy) analogy.classList.add('hidden');
                         if(results) results.classList.add('hidden');
-
-                        title.innerText = currentLabels.prep_title || "Bereid je voor..."; 
-                        sub.innerText = currentLabels.prep_sub || "Ontspan je schouders.";
+                        title.innerText = currentLabels.prep_title || "Bereid je voor..."; sub.innerText = currentLabels.prep_sub || "Ontspan je schouders.";
                         pie.classList.add('hidden'); 
                         const prep = document.getElementById('prepCountdown');
-                        if (prep) {
-                            prep.classList.remove('hidden');
-                            prep.innerText = Math.ceil((30000 - breathElapsed) / 1000);
-                        }
+                        if (prep) { prep.classList.remove('hidden'); prep.innerText = Math.ceil((30000 - breathElapsed) / 1000); }
                         return;
                     } else {
                         clearInterval(masterInt);
                         document.getElementById('actionArea').classList.add('hidden');
-                        
-                        const prep = document.getElementById('prepCountdown');
-                        if (prep) prep.classList.add('hidden');
-
+                        const prep = document.getElementById('prepCountdown'); if (prep) prep.classList.add('hidden');
                         document.getElementById('breathingArea').classList.remove('hidden');
                         startBreathing(); return;
                     }
@@ -548,7 +514,6 @@
             }, 500);
         }
 
-        // --- ONDERDELEN LOGICA ---
         function startAdaptiveJourney(total) {
             const track = document.getElementById('timelineTrack'), markerNum = document.getElementById('markerNum'), langIdx = sessionData.lang === 'en' ? 2 : 1;
             const spacing = 350;
@@ -557,9 +522,7 @@
             if (total > j3_max) journeyCol = 6; else if (total > j2_max) journeyCol = 5; else if (total > j1_max) journeyCol = 4;
 
             let activeMilestones = milestoneDataRaw.filter(ms => ms[journeyCol] && ms[journeyCol].toLowerCase() === 'x' && !isNaN(parseInt(ms[0])));
-            if (activeMilestones.length === 0 || parseInt(activeMilestones[0][0]) !== 0) {
-                activeMilestones.unshift(["0", currentLabels.start_label || "Start", currentLabels.start_label || "Start", "x", "x", "x", "x"]);
-            }
+            if (activeMilestones.length === 0 || parseInt(activeMilestones[0][0]) !== 0) activeMilestones.unshift(["0", currentLabels.start_label || "Start", currentLabels.start_label || "Start", "x", "x", "x", "x"]);
 
             let lastMilestoneName = "", triggeredIdx = -1;
             track.innerHTML = '<div class="road-base"></div><div class="road-progress" id="roadFill"></div>';
@@ -591,7 +554,6 @@
                 track.style.transform = `translateX(-${currentPos}px)`;
                 const fill = document.getElementById('roadFill');
                 if(fill) fill.style.width = currentPos + "px";
-
                 if (progress >= 1) { clearInterval(anim); triggerCelebration(lastMilestoneName); }
             }, 30);
         }
@@ -623,7 +585,6 @@
             
             const totalKg = Math.round(sessions * weightPerSession);
             const totalMeters = Math.round(sessions * distPerSession);
-
             const set = animalSets.filter(a => a[0] === gender);
             const l_kg = parseInt((set.find(a => a[1] === 'large') || [])[4] || 5000);
             const m_kg = parseInt((set.find(a => a[1] === 'mid') || [])[4] || 300);
@@ -639,10 +600,7 @@
             const kgInt = setInterval(() => {
                 curKg += totalKg / 40;
                 if(weightValEl) weightValEl.innerText = Math.round(curKg).toLocaleString(sessionData.lang === 'en' ? 'en-US' : 'nl-NL') + " kg";
-                if (curKg >= totalKg) { 
-                    clearInterval(kgInt); 
-                    if(weightValEl) weightValEl.innerText = totalKg.toLocaleString(sessionData.lang === 'en' ? 'en-US' : 'nl-NL') + " kg"; 
-                }
+                if (curKg >= totalKg) { clearInterval(kgInt); if(weightValEl) weightValEl.innerText = totalKg.toLocaleString(sessionData.lang === 'en' ? 'en-US' : 'nl-NL') + " kg"; }
             }, 40);
 
             const display = document.getElementById('animalDisplay');
@@ -652,8 +610,7 @@
             const addAnimalRow = (count, animalData, delayIndex) => {
                 if (count <= 0 || !animalData) return; 
                 setTimeout(() => {
-                    let row = document.createElement('div');
-                    row.className = 'animal-row';
+                    let row = document.createElement('div'); row.className = 'animal-row';
                     row.innerHTML = `<span class="animal-emoji">${animalData[5]}</span><span class="animal-text">${count}x ${animalData[nameIdx]}</span>`;
                     if(display) display.appendChild(row);
                 }, delayIndex * 500); 
@@ -665,33 +622,24 @@
             if (s_count > 0 || (l_count === 0 && m_count === 0)) addAnimalRow(s_count, set.find(a => a[1] === 'small'), delayIdx++);
 
             const validMetas = distanceMetaphors.filter(m => !isNaN(parseInt(m[3])) && parseInt(m[3]) > 0);
-            let meta = validMetas
-                .filter(m => m[0] === gender || m[0] === 'both')
-                .filter(m => parseInt(m[3]) <= totalMeters)
-                .sort((a,b) => b[3] - a[3])[0];
-            
+            let meta = validMetas.filter(m => m[0] === gender || m[0] === 'both').filter(m => parseInt(m[3]) <= totalMeters).sort((a,b) => b[3] - a[3])[0];
             if(!meta) meta = validMetas.filter(m => m[0] === gender || m[0] === 'both').sort((a,b) => a[3] - b[3])[0];
             
             if(meta) {
                 const metaDist = parseInt(meta[3]);
                 let mult = totalMeters / metaDist;
                 let multStrEN = "", multStrNL = "";
-                
                 if (mult >= 1.1) {
-                    let fmtEN = mult.toFixed(1).replace('.0', '');
-                    let fmtNL = fmtEN.replace('.', ',');
-                    multStrEN = fmtEN + "x ";
-                    multStrNL = fmtNL + "x ";
+                    let fmtEN = mult.toFixed(1).replace('.0', ''); let fmtNL = fmtEN.replace('.', ',');
+                    multStrEN = fmtEN + "x "; multStrNL = fmtNL + "x ";
                 }
-                
                 setTimeout(() => {
                     const reveal = document.getElementById('distReveal');
                     if(reveal) {
                         const distTxt = sessionData.lang === 'en' ? 
                             `Moving under heavy load for a total distance of ${totalMeters.toLocaleString('en-US')}m...\nThat equals ${multStrEN}${meta[5]} ${meta[2]}!` : 
                             `En dat over een afstand van ${totalMeters.toLocaleString('nl-NL')}m onder zware weerstand...\nDat is gelijk aan ${multStrNL}${meta[4]} ${meta[1]}!`;
-                        reveal.innerText = distTxt;
-                        reveal.classList.add('show');
+                        reveal.innerText = distTxt; reveal.classList.add('show');
                     }
                 }, 3000);
             }
@@ -706,10 +654,7 @@
                 if(cur <= e) { 
                     clearInterval(int); if(dyn) dyn.innerText = e;
                     const badge = document.getElementById('ageDiffBadge');
-                    if(badge) {
-                        badge.innerText = (currentLabels.badge_text || "").replace('{diff}', (s-e));
-                        badge.classList.add('show');
-                    }
+                    if(badge) { badge.innerText = (currentLabels.badge_text || "").replace('{diff}', (s-e)); badge.classList.add('show'); }
                 }
             }, 80);
         }
@@ -719,14 +664,13 @@
             let step = 1, phase = 0, total = 210;
             const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             
-            // BOX BREATHE START OP 600ms
             setTimeout(() => { 
                 if(!isRelaxedMode && currentBreathSize === 4) { 
-                    setGlobalVolume('normal'); // Forceer volume "naar voren"
+                    setGlobalVolume('normal'); 
                     audioBox.currentTime = 0; 
-                    crossfade(audioPrep, audioBox, 2000); 
+                    crossfade(audioPrep, audioBox, 1500); 
                 } else { 
-                    if (audioPrep.paused) { crossfade(null, audioPrep, 2000); } 
+                    if (audioPrep.paused) { crossfade(null, audioPrep, 1500); } 
                 } 
             }, 600);
 
@@ -746,41 +690,28 @@
                 if (phase === 2) bPie.style.transform = "scale(0.8)";
                 
                 if (step++ >= currentBreathSize) { step = 1; phase = (phase + 1) % 4; }
-                if (total-- <= 0) { 
-                    clearInterval(breathingInterval); 
-                    showFinal(); 
-                }
+                if (total-- <= 0) { clearInterval(breathingInterval); showFinal(); }
             }, 1000);
         }
 
         function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
-            const prep = document.getElementById('prepCountdown');
-            if (prep) prep.classList.add('hidden');
-
-            const area = document.getElementById('actionArea');
-            if(area) { area.classList.remove('hidden'); area.classList.remove('reveal-active'); }
-            document.getElementById('timelineArea').classList.add('hidden');
-            document.getElementById('resultsArea').classList.add('hidden');
-            document.getElementById('analogyArea').classList.add('hidden');
+            const prep = document.getElementById('prepCountdown'); if (prep) prep.classList.add('hidden');
+            const area = document.getElementById('actionArea'); if(area) { area.classList.remove('hidden'); area.classList.remove('reveal-active'); }
+            document.getElementById('timelineArea').classList.add('hidden'); document.getElementById('resultsArea').classList.add('hidden'); document.getElementById('analogyArea').classList.add('hidden');
             
             document.getElementById('mainTitle').innerText = (currentLabels.end_title || "Bedankt").replace('{user}', sessionData.user);
             document.getElementById('mainSubContainer').innerText = currentLabels.end_sub || "Tot volgende week!";
             
-            const p = document.getElementById('flowCircle'); 
-            const fc = document.getElementById('flowCircleContent');
+            const p = document.getElementById('flowCircle'), fc = document.getElementById('flowCircleContent');
             if(p) { p.classList.remove('hidden'); p.className = "visual-circle"; p.style.transform = "none"; p.style.background = "var(--light-gray)"; }
             if(fc) fc.innerText = "✓";
             
-            // CROSSFADE NAAR EINDMUZIEK (5.mp3)
-            if (!audioPlayed.p5) { crossfade(activeAudio, audio5, 2000); audioPlayed.p5 = true; }
-            
-            // Herlaad pagina na 30 seconden
+            if (!audioPlayed.p5) { crossfade(activeAudio, audio5, 1500); audioPlayed.p5 = true; }
             setTimeout(() => location.reload(), 30000);
         }
 
-        loadData();
-        setInterval(checkInbox, 3000);
+        loadData(); setInterval(checkInbox, 3000);
     </script>
 </body>
 </html>
