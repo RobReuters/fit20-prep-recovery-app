@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v6.0</title>
+    <title>fit20 Recovery v6.1</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -101,7 +101,7 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v6.0</div>
+    <div id="vTag">v6.1</div>
     
     <div id="volumeControls" class="hidden">
         <div class="vol-btn" id="vol-mute">🔇</div>
@@ -178,8 +178,8 @@
     <div class="bottom-section"><img src="fit20-logo.png" class="logo"><div class="progress" id="progressContainer"><div id="bar"></div></div></div>
 
     <script>
-        // CONFIG & URLS
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzas3NuEU2E1nN3tjM0muIzOkODOnQjU9ugYpjiC4YK5sGHHLxQPD24FOVhijlvA6EGIA/exec';
+        // CONFIG & URLS: Nieuwe v6.1 Opslag URL
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydu3SkCr9z-WnvLYbzn3_bybZi2iEaQJNkoB81SwmJkUlczLS8_LQfITJ6EDER0LcakQ/exec';
         const BIN_ID = '69d00c00856a682189f8b7f6';
         const MASTER_KEY = '$2a$10$qtn.qYbtTNwhtyhfhDsxVOd/Up7k8RpCA6YyI0GX5xKEycOKC3xym';
         const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR93iWmH6-aDPhu-8McxeU557j-_lgynBW3CVRJycKeaDDejXKIrO-rbXRlNqobtaXVCnZUvM0Z45yk/pub?single=true&output=csv&gid=';
@@ -429,7 +429,7 @@
                     container.appendChild(card);
                 });
                 
-                // Fallback timeout: if they don't answer in 15s, proceed to final screen anyway
+                // Fallback timeout: proceed to final screen anyway
                 setTimeout(() => { if(!score2) finalizeAndSend(); }, 15000);
             }
         }
@@ -640,7 +640,7 @@
                 
                 if (activeSteps.includes('end')) { 
                     clearInterval(masterInt); 
-                    showFeedback(2); // Show the final Q2 feedback instead of direct Final screen
+                    showFeedback(2);
                 } else { location.reload(); }
             }, 500);
         }
@@ -846,7 +846,7 @@
                 if (step++ >= currentBreathSize) { step = 1; phase = (phase + 1) % 4; }
                 if (total-- <= 0) { 
                     clearInterval(breathingInterval); 
-                    showFeedback(2); // Vang de gebruiker af voor de eindboodschap!
+                    showFeedback(2);
                 }
             }, 1000);
         }
