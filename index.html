@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>fit20 Recovery v5.6</title>
+    <title>fit20 Recovery v5.7</title>
     <style>
         :root { --fit20-green: #8BC63F; --fit20-blue: #009DF4; --antraciet: #333333; --light-gray: #f0f0f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,20 +23,20 @@
         .instruction-title { font-size: 4vw; font-weight: 700; margin-bottom: 1vh; min-height: 1.2em; transition: font-size 0.5s; }
         .sub-text { font-size: 1.8vw; color: #666; line-height: 1.4; max-width: 900px; min-height: 3em; transition: font-size 0.5s; }
 
-        /* JOURNEY & ANALOGY STYLING (FIX B: Nummers en dots) */
+        /* VOLUME CONTROLS (Nieuw v5.7) */
+        #volumeControls { position: fixed; top: 3vh; right: 3vw; display: flex; gap: 15px; z-index: 2000; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(5px); }
+        .vol-btn { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--fit20-blue); background: white; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--fit20-blue); transition: all 0.2s; }
+        .vol-btn.active { background: var(--fit20-blue); color: white; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,157,244,0.4); }
+        .vol-btn:active { transform: scale(0.9); }
+
+        /* JOURNEY & ANALOGY STYLING */
         #timelineArea { width: 100vw; height: 500px; position: relative; overflow: hidden; display: flex; align-items: center; }
         .timeline-track { position: absolute; height: 100%; left: 50%; width: 10000px; display: flex; align-items: center; transition: none; z-index: 5; }
         .road-base { position: absolute; height: 10px; background: #eee; left: 0; width: 100%; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 1; }
         .road-progress { position: absolute; height: 10px; background: var(--fit20-green); left: 0; width: 0; top: 60%; transform: translateY(-50%); border-radius: 5px; z-index: 2; }
-        
-        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateX(-50%); top: 60%; z-index: 10; height: 10px; }
-        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: absolute; }
+        .milestone { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); top: 60%; z-index: 10; }
+        .milestone-dot { width: 22px; height: 22px; background: #ddd; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(-50%); }
         .milestone.reached .milestone-dot { background: var(--fit20-green); }
-        .milestone-label { position: absolute; top: 25px; font-size: 1.1vw; font-weight: bold; color: #bbb; white-space: nowrap; transition: all 0.3s ease; }
-        .milestone.active-pop .milestone-label { color: var(--fit20-blue); font-size: 2.2vw; transform: scale(1.1); }
-        .milestone.reached:not(.active-pop) .milestone-label { color: var(--antraciet); }
-        .milestone-count { position: absolute; bottom: 25px; font-size: 0.9vw; color: #aaa; font-weight: bold; }
-
         .current-marker { position: absolute; left: 50%; top: 35%; width: 110px; height: 110px; background: var(--fit20-blue); border-radius: 50%; transform: translate(-50%, -50%); z-index: 100; border: 6px solid white; box-shadow: 0 10px 30px rgba(0,157,244,0.4); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .current-marker::after { content: ""; position: absolute; top: 100%; left: 50%; width: 4px; height: 120px; background: repeating-linear-gradient(to bottom, var(--fit20-blue), var(--fit20-blue) 5px, transparent 5px, transparent 10px); opacity: 0.4; transform: translateX(-50%); z-index: -1; }
         .marker-val { font-size: 3vw; font-weight: 900; line-height: 1; }
@@ -87,7 +87,15 @@
     </style>
 </head>
 <body>
-    <div id="vTag">v5.6</div>
+    <div id="vTag">v5.7</div>
+    
+    <div id="volumeControls" class="hidden">
+        <div class="vol-btn" id="vol-mute">🔇</div>
+        <div class="vol-btn" id="vol-soft">🔉</div>
+        <div class="vol-btn active" id="vol-normal">🔊</div>
+        <div class="vol-btn" id="vol-loud">📢</div>
+    </div>
+
     <div class="top-section"><div id="overallTimer" class="hidden"><span id="timeVal">--:--</span></div></div>
 
     <div class="middle-section" id="setupArea">
@@ -164,35 +172,83 @@
             distance: '1614390821' 
         };
 
-        const audioPrep = new Audio('4-1.mp3');
-        const audioBox = new Audio('4-2.mp3');
-        audioPrep.loop = true; audioBox.loop = true;
+        // --- AUDIO ENGINE v5.7 ---
+        let volMute = 0.0, volSoft = 0.3, volNormal = 0.7, volLoud = 1.0;
+        let currentVolState = 'normal';
+        let activeAudio = null;
 
-        let reservoir = [], labelsRaw = [], milestoneDataRaw = [], analogySettings = [], animalSets = [], distanceMetaphors = [];
-        let sessionData = { lang: 'nl', showFitAge: true };
-        let isSessionActive = false, currentLabels = {}, preSelectedTexts = {};
+        const audio1 = new Audio(); audio1.loop = true;
+        const audio2 = new Audio('2.mp3'); audio2.loop = true;
+        const audio3 = new Audio('3.mp3'); audio3.loop = true;
+        const audioPrep = new Audio('4-1.mp3'); audioPrep.loop = true;
+        const audioBox = new Audio('4-2.mp3'); audioBox.loop = true;
+        const audio5 = new Audio('5.mp3'); audio5.loop = true;
         
-        let currentBreathSize = 4;
-        let breathingInterval = null;
-        let isRelaxedMode = false;
+        const goalAudioMap = { 'kracht': '1A.mp3', 'welzijn': '1B.mp3', 'pijn': '1C.mp3', 'mobiliteit': '1D.mp3' };
 
-        // --- C) FADE AUDIO ENGINE ---
+        function applyVolumeSettings() {
+            const vS = analogySettings.find(s => s[0] === 'vol_soft');
+            const vN = analogySettings.find(s => s[0] === 'vol_normal');
+            const vL = analogySettings.find(s => s[0] === 'vol_loud');
+            if(vS) volSoft = parseFloat(vS[2]);
+            if(vN) volNormal = parseFloat(vN[2]);
+            if(vL) volLoud = parseFloat(vL[2]);
+        }
+
+        function getTargetVolume() {
+            if(currentVolState === 'mute') return volMute;
+            if(currentVolState === 'soft') return volSoft;
+            if(currentVolState === 'loud') return volLoud;
+            return volNormal;
+        }
+
+        function setGlobalVolume(state) {
+            currentVolState = state;
+            document.querySelectorAll('.vol-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('vol-' + state).classList.add('active');
+            if (activeAudio) activeAudio.volume = getTargetVolume();
+        }
+
+        // Volume knoppen Events
+        document.getElementById('vol-mute').onclick = () => setGlobalVolume('mute');
+        document.getElementById('vol-soft').onclick = () => setGlobalVolume('soft');
+        document.getElementById('vol-normal').onclick = () => setGlobalVolume('normal');
+        document.getElementById('vol-loud').onclick = () => setGlobalVolume('loud');
+
         function crossfade(audioOut, audioIn, duration = 2000) {
+            let targetVol = getTargetVolume();
+            
             if (audioIn) {
-                audioIn.volume = 1;
+                audioIn.volume = 0;
                 audioIn.play().catch(e=>console.log(e));
+                activeAudio = audioIn; // Set as global active
+                
+                let volIn = 0;
+                const stepIn = targetVol / (duration / 50);
+                const fadeIntervalIn = setInterval(() => {
+                    volIn += stepIn;
+                    // Check of state is veranderd tijdens faden (bijv user klikt mute)
+                    let currentTarget = getTargetVolume(); 
+                    if (volIn >= currentTarget) {
+                        audioIn.volume = currentTarget;
+                        clearInterval(fadeIntervalIn);
+                    } else {
+                        audioIn.volume = volIn;
+                    }
+                }, 50);
             }
+            
             if (audioOut && !audioOut.paused) {
-                let vol = audioOut.volume;
-                const step = vol / (duration / 50); // we update every 50ms
-                const fadeInterval = setInterval(() => {
-                    vol -= step;
-                    if (vol <= 0) {
+                let volOut = audioOut.volume;
+                const stepOut = volOut / (duration / 50);
+                const fadeIntervalOut = setInterval(() => {
+                    volOut -= stepOut;
+                    if (volOut <= 0) {
                         audioOut.volume = 0;
                         audioOut.pause();
-                        clearInterval(fadeInterval);
+                        clearInterval(fadeIntervalOut);
                     } else {
-                        audioOut.volume = vol;
+                        audioOut.volume = volOut;
                     }
                 }, 50);
             }
@@ -200,20 +256,32 @@
 
         function fadeOut(audioTarget, duration = 2000) {
             if (audioTarget && !audioTarget.paused) {
-                let vol = audioTarget.volume;
-                const step = vol / (duration / 50);
-                const fadeInterval = setInterval(() => {
-                    vol -= step;
-                    if (vol <= 0) {
+                let volOut = audioTarget.volume;
+                const stepOut = volOut / (duration / 50);
+                const fadeIntervalOut = setInterval(() => {
+                    volOut -= stepOut;
+                    if (volOut <= 0) {
                         audioTarget.volume = 0;
                         audioTarget.pause();
-                        clearInterval(fadeInterval);
+                        clearInterval(fadeIntervalOut);
                     } else {
-                        audioTarget.volume = vol;
+                        audioTarget.volume = volOut;
                     }
                 }, 50);
             }
         }
+
+        // --- REST VAN STATE EN DATA ---
+        let reservoir = [], labelsRaw = [], milestoneDataRaw = [], analogySettings = [], animalSets = [], distanceMetaphors = [];
+        let sessionData = { lang: 'nl', showFitAge: true };
+        let isSessionActive = false, currentLabels = {}, preSelectedTexts = {};
+        
+        let currentBreathSize = 4;
+        let breathingInterval = null;
+        let isRelaxedMode = false;
+        
+        // Track welke audio al gefade is
+        let audioPlayed = { p1: false, p2: false, p3: false, p4prep: false, p4box: false, p5: false };
 
         function parseCSV(text) {
             if(!text || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) return [];
@@ -224,31 +292,21 @@
         }
 
         async function loadData() {
-            const msg = document.getElementById('personalMsg');
             try {
                 const results = await Promise.all(Object.values(GIDS).map(gid => fetch(BASE_URL + gid + '&t=' + Date.now()).then(r => r.text())));
                 reservoir = parseCSV(results[0]); labelsRaw = parseCSV(results[1]); milestoneDataRaw = parseCSV(results[2]);
                 analogySettings = parseCSV(results[3]); animalSets = parseCSV(results[4]); distanceMetaphors = parseCSV(results[5]);
+                if (distanceMetaphors.length === 0) distanceMetaphors = [["both", "een Olympisch zwembad", "an Olympic pool", "50", "de lengte van", "the length of"]];
                 
-                if (distanceMetaphors.length === 0) {
-                    distanceMetaphors = [["both", "een Olympisch zwembad", "an Olympic pool", "50", "de lengte van", "the length of"]];
-                }
+                applyVolumeSettings(); // Nieuw: haal volumes uit sheet
                 updateUILanguage();
-            } catch (e) { 
-                console.error(e);
-                if(msg) msg.innerHTML = "<span style='color:red'>Laden mislukt. Check de Google Sheet URL's.</span>"; 
-            }
+            } catch (e) { console.error(e); }
         }
 
         function updateUILanguage() {
             const langIdx = sessionData.lang === 'en' ? 2 : 1;
             labelsRaw.forEach(row => { if(row && row[0]) currentLabels[row[0]] = row[langIdx]; });
-            
-            const setTxt = (id, key, def) => { 
-                const el = document.getElementById(id); 
-                if(el) el.innerText = currentLabels[key] || def; 
-            };
-
+            const setTxt = (id, key, def) => { const el = document.getElementById(id); if(el) el.innerText = currentLabels[key] || def; };
             setTxt('personalMsg', 'setup_msg', "Systeem gereed...");
             setTxt('startActionBtn', 'start_btn', "START");
             setTxt('markerLab', 'sessions_label', sessionData.lang === 'en' ? "Sessions" : "Sessies");
@@ -259,9 +317,7 @@
 
         function updateBreathImage() {
             const imgEl = document.querySelector('#breathInstructImg img');
-            if(imgEl && !isRelaxedMode) {
-                imgEl.src = `box-${currentBreathSize}-${sessionData.lang}.png`;
-            }
+            if(imgEl && !isRelaxedMode) imgEl.src = `box-${currentBreathSize}-${sessionData.lang}.png`;
         }
 
         async function checkInbox() {
@@ -274,19 +330,21 @@
                     if(typeof sessionData.showFitAge === 'undefined') sessionData.showFitAge = true;
                     
                     updateUILanguage();
-                    const userEl = document.getElementById('userName');
-                    if(userEl) userEl.innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo ") + sessionData.user;
-                    
+                    document.getElementById('userName').innerText = (sessionData.lang === 'en' ? "Hello " : "Hallo ") + sessionData.user;
                     const msgEl = document.getElementById('personalMsg');
                     if(msgEl) msgEl.innerText = currentLabels.ready_msg || (sessionData.lang === 'en' ? "Ready to start?" : "Klaar voor de start?");
                     
-                    const btn = document.getElementById('startActionBtn');
-                    if(btn) btn.classList.remove('hidden');
-                    
-                    ["a","b","c","d","e","f","g","h","i","j"].forEach(cat => preSelectedTexts[cat] = pickStaticText(cat));
-                    
-                    updateBreathImage();
+                    // Audio 1 dynamisch koppelen aan doel
+                    if (sessionData.profiles && sessionData.profiles.length > 0) {
+                        const chosenGoal = sessionData.profiles[Math.floor(Math.random() * sessionData.profiles.length)];
+                        audio1.src = goalAudioMap[chosenGoal] || '1A.mp3';
+                    } else {
+                        audio1.src = '1A.mp3';
+                    }
 
+                    document.getElementById('startActionBtn').classList.remove('hidden');
+                    ["a","b","c","d","e","f","g","h","i","j"].forEach(cat => preSelectedTexts[cat] = pickStaticText(cat));
+                    updateBreathImage();
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ "user": "", "program": "idle" }) });
                 }
             } catch (e) {}
@@ -299,12 +357,12 @@
             return pick ? { title: pick[langIdx[0]], text: pick[langIdx[1]] } : { title: "", text: "" };
         }
 
-        // INIT AUDIO UNLOCK
         document.getElementById('startActionBtn').addEventListener('click', () => {
             isSessionActive = true;
-            audioPrep.volume = 1; audioPrep.play().then(() => audioPrep.pause());
-            audioBox.volume = 1; audioBox.play().then(() => audioBox.pause());
+            // Unlock alle audio streams in browser
+            [audio1, audio2, audio3, audioPrep, audioBox, audio5].forEach(a => { a.volume = 0; a.play().then(() => a.pause()).catch(e=>console.log(e)); });
             
+            document.getElementById('volumeControls').classList.remove('hidden'); // Toon volume knoppen
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('actionArea').classList.remove('hidden');
             document.getElementById('overallTimer').classList.remove('hidden');
@@ -314,15 +372,12 @@
 
         // --- INTERACTIE KNOPPEN ---
         document.getElementById('btn44').onclick = () => {};
-        
         document.getElementById('btn33').onclick = () => {
             isRelaxedMode = false; currentBreathSize = 3;
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('breathCircle').style.setProperty('--circle-speed', '3s');
             updateBreathUI('btn33'); updateBreathImage();
-            
-            // CROSSFADE: Box muziek uit, Prep muziek weer aan in 2 seconden
-            crossfade(audioBox, audioPrep, 2000);
+            crossfade(audioBox, audioPrep, 2000); // Crossfade terug naar prep
         };
 
         document.getElementById('btnStop').onclick = () => {
@@ -330,9 +385,7 @@
             document.getElementById('btn44').classList.add('btn-hidden');
             document.getElementById('btn33').disabled = true;
             updateBreathUI('btnStop');
-            
-            // CROSSFADE: Box muziek uit, Prep muziek weer aan in 2 seconden
-            crossfade(audioBox, audioPrep, 2000);
+            crossfade(audioBox, audioPrep, 2000); // Crossfade terug naar prep
         };
 
         function updateBreathUI(activeId) {
@@ -369,6 +422,8 @@
                 
                 // 1. RECOVERY
                 if (activeSteps.includes('recovery')) {
+                    if (!audioPlayed.p1) { crossfade(activeAudio, audio1); audioPlayed.p1 = true; }
+                    
                     if (elapsed < 180000) {
                         const cat = ["a","b","c","d","e","f"][Math.floor(elapsed / 30000)];
                         title.innerText = preSelectedTexts[cat].title; sub.innerText = preSelectedTexts[cat].text;
@@ -380,6 +435,8 @@
 
                 // 2. RESULTS
                 if (activeSteps.includes('results')) {
+                    if (!audioPlayed.p2) { crossfade(activeAudio, audio2); audioPlayed.p2 = true; }
+
                     let resElapsed = elapsed - (stepStart * 1000);
                     if (resElapsed < 60000) {
                         pie.classList.add('hidden');
@@ -410,10 +467,8 @@
                                 let fit = parseInt(sessionData.fitAge);
                                 let meterContainer = document.querySelector('.meter-container');
                                 let badge = document.getElementById('ageDiffBadge');
-
                                 document.getElementById('valCal').innerText = cal;
                                 
-                                // FIX A: Dynamische Fit20 Age Threshold uitlezen uit sheet (of fallback naar 1)
                                 const minAgeSetting = analogySettings.find(s => s[0] === 'min_age_diff' && s[1] === sessionData.genders[0]);
                                 const minAgeDiff = minAgeSetting ? parseInt(minAgeSetting[2]) : 1;
 
@@ -427,7 +482,6 @@
                                     badge.style.fontSize = "3vw";
                                     badge.style.transform = "scale(0.5)"; 
                                     badge.innerText = currentLabels.age_equal_msg || "Je traint nu al op het niveau van iemand van jouw leeftijd!";
-                                    
                                     setTimeout(() => { badge.style.transform = "scale(1)"; badge.style.opacity = "1"; }, 100);
                                 } else {
                                     meterContainer.classList.remove('hidden');
@@ -446,6 +500,8 @@
                 
                 // 3. SCIENCE
                 if (activeSteps.includes('science')) {
+                    if (!audioPlayed.p3) { crossfade(activeAudio, audio3); audioPlayed.p3 = true; }
+
                     let sciElapsed = elapsed - (stepStart * 1000);
                     if (sciElapsed < 120000) {
                         results.classList.add('hidden'); pie.classList.remove('hidden'); analogy.classList.add('hidden'); timeline.classList.add('hidden');
@@ -459,6 +515,8 @@
                 
                 // 4. BREATHING
                 if (activeSteps.includes('breathing')) {
+                    if (!audioPlayed.p4prep) { crossfade(activeAudio, audioPrep); audioPlayed.p4prep = true; }
+
                     let breathElapsed = elapsed - (stepStart * 1000);
                     if (breathElapsed < 30000) {
                         if(timeline) timeline.classList.add('hidden');
@@ -473,9 +531,6 @@
                             prep.classList.remove('hidden');
                             prep.innerText = Math.ceil((30000 - breathElapsed) / 1000);
                         }
-                        
-                        // Zorg dat de volume van prep audio 1 is, voor het geval hij uit-gefaded was
-                        if (audioPrep.paused) { audioPrep.volume = 1; audioPrep.play(); }
                         return;
                     } else {
                         clearInterval(masterInt);
@@ -493,11 +548,10 @@
             }, 500);
         }
 
-        // --- ONDERDELEN LOGICA (Journey & Analogy) ---
+        // --- ONDERDELEN LOGICA ---
         function startAdaptiveJourney(total) {
             const track = document.getElementById('timelineTrack'), markerNum = document.getElementById('markerNum'), langIdx = sessionData.lang === 'en' ? 2 : 1;
             const spacing = 350;
-            
             const j1_max = parseInt(currentLabels.j1_max || 29), j2_max = parseInt(currentLabels.j2_max || 69), j3_max = parseInt(currentLabels.j3_max || 149);
             let journeyCol = 3;
             if (total > j3_max) journeyCol = 6; else if (total > j2_max) journeyCol = 5; else if (total > j1_max) journeyCol = 4;
@@ -508,7 +562,6 @@
             }
 
             let lastMilestoneName = "", triggeredIdx = -1;
-
             track.innerHTML = '<div class="road-base"></div><div class="road-progress" id="roadFill"></div>';
             activeMilestones.forEach((ms, index) => {
                 let div = document.createElement('div'); div.className = "milestone"; div.id = "ms-" + index; div.style.left = (index * spacing) + "px";
@@ -666,14 +719,14 @@
             let step = 1, phase = 0, total = 210;
             const phases = sessionData.lang === 'en' ? ["Inhale (nose)", "Hold", "Exhale (mouth)", "Hold"] : ["Adem in (neus)", "Vast houden", "Adem uit (mond)", "Vast houden"];
             
-            // CROSSFADE: start Box Audio op 600ms, en fade Prep zachtjes uit in 2 sec
+            // BOX BREATHE START OP 600ms
             setTimeout(() => { 
                 if(!isRelaxedMode && currentBreathSize === 4) { 
+                    setGlobalVolume('normal'); // Forceer volume "naar voren"
                     audioBox.currentTime = 0; 
                     crossfade(audioPrep, audioBox, 2000); 
                 } else { 
-                    // Blijf rustige prep-muziek spelen
-                    if (audioPrep.paused) { audioPrep.volume = 1; audioPrep.play(); } 
+                    if (audioPrep.paused) { crossfade(null, audioPrep, 2000); } 
                 } 
             }, 600);
 
@@ -695,9 +748,6 @@
                 if (step++ >= currentBreathSize) { step = 1; phase = (phase + 1) % 4; }
                 if (total-- <= 0) { 
                     clearInterval(breathingInterval); 
-                    // Einde oefening, fade alles uit
-                    fadeOut(audioBox, 2000);
-                    fadeOut(audioPrep, 2000);
                     showFinal(); 
                 }
             }, 1000);
@@ -705,7 +755,6 @@
 
         function showFinal() {
             document.getElementById('breathingArea').classList.add('hidden');
-            
             const prep = document.getElementById('prepCountdown');
             if (prep) prep.classList.add('hidden');
 
@@ -720,18 +769,13 @@
             
             const p = document.getElementById('flowCircle'); 
             const fc = document.getElementById('flowCircleContent');
-            if(p) { 
-                p.classList.remove('hidden'); 
-                p.className = "visual-circle"; 
-                p.style.transform = "none"; 
-                p.style.background = "var(--light-gray)"; 
-            }
+            if(p) { p.classList.remove('hidden'); p.className = "visual-circle"; p.style.transform = "none"; p.style.background = "var(--light-gray)"; }
             if(fc) fc.innerText = "✓";
             
-            // Muziek uitfaden als er handmatig op stop gedrukt is en we direct naar final gaan
-            fadeOut(audioPrep, 2000);
-            fadeOut(audioBox, 2000);
+            // CROSSFADE NAAR EINDMUZIEK (5.mp3)
+            if (!audioPlayed.p5) { crossfade(activeAudio, audio5, 2000); audioPlayed.p5 = true; }
             
+            // Herlaad pagina na 30 seconden
             setTimeout(() => location.reload(), 30000);
         }
 
